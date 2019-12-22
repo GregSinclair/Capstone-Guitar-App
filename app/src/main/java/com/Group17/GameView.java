@@ -203,13 +203,15 @@ public class GameView extends SurfaceView implements Runnable {
             Canvas canvas = getHolder().lockCanvas();
             canvas.drawBitmap(background.background, background.x, background.y, paint);
 
-            canvas.drawBitmap(tracker.getBitmap(), tracker.x, tracker.y, paint);
+
 
             for (Beat beat : beats)
             {
                 canvas.drawBitmap(beat.getBeat(), beat.x, beat.y, paint);
             }
 
+
+            canvas.drawBitmap(tracker.getBitmap(), tracker.x, tracker.y, paint);
 
             canvas.drawText(score + "", screenX / 2f, 164, paint);
 
@@ -227,7 +229,11 @@ public class GameView extends SurfaceView implements Runnable {
             for (Bullet bullet : bullets)
                 canvas.drawBitmap(bullet.bullet, bullet.x, bullet.y, paint);
 
+            
+
             getHolder().unlockCanvasAndPost(canvas);
+
+
 
         }
 
