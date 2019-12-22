@@ -21,8 +21,13 @@ public class Beat {
     Bitmap beatSprite;
     Bitmap beatSprite2;
     Bitmap beatSprite3;
+
+    boolean feedbackApplied = false;
+    Resources res; //dumb implementation, temporary
+
     public Beat(Resources res, Note[] frets){
 
+        this.res = res;
         beatSprite = BitmapFactory.decodeResource(res, R.drawable.fret);
         beatSprite2 = BitmapFactory.decodeResource(res, R.drawable.fretdot);
         width = screenX/10;
@@ -41,6 +46,29 @@ public class Beat {
 
     }
 
+    public void applyFeedback(int[] feedback) { //6 bits
+        if (!feedbackApplied) {
+            feedbackApplied = true;
+
+            beatSprite3 = null;
+            beatSprite = BitmapFactory.decodeResource(res, R.drawable.fret);
+            beatSprite = Bitmap.createScaledBitmap(beatSprite, width, height, false);
+            for (int i = 0; i < 6; i++) {
+                if (notes[i] != null && notes[i].getNote() != null) {
+                    if(feedback[i] == 0){
+                        updateBitmap(i, notes[i].getNote());
+                    }
+                    else {
+                        updateBitmap(i, notes[i].getFadedNote());
+                    }
+
+                }
+            }
+            combine();
+        }
+    }
+
+
     public Bitmap getBeat () {
         return this.beatSprite3;
     }
@@ -49,6 +77,7 @@ public class Beat {
     }
     public int getWidth() { return this.beatSprite3.getWidth();}
     public int getHeight() { return this.beatSprite3.getHeight();}
+
     private void updateBitmap(int position, Bitmap newSprite){ //smashes a new sprite onto the current pile
         int top = beatSprite.getHeight()*position/6 + (beatSprite.getHeight()/6 - newSprite.getHeight())/2;
         int left = (beatSprite.getWidth() - newSprite.getWidth())/2;

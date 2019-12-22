@@ -7,11 +7,15 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+
 import android.graphics.Paint;
+
 import android.graphics.Rect;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
+
 import android.media.SoundPool;
+
 import android.os.Build;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
@@ -21,6 +25,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import android.media.AudioManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -180,6 +186,13 @@ public class GameView extends SurfaceView implements Runnable {
 */
         for (Beat beat : beats) {
             beat.x -= beat.speed;
+
+            if (beat.x < screenRatioX*0.15) { //Make an executive decision about where feedback must be applied before error thrown, or be more flexible? Pros and cons
+                int[] feedback = {0,1,0,1,0,1}; //test values
+
+                beat.applyFeedback(feedback); //would pass in feedback here if it exists.
+            }
+
             if (beat.x + beat.getWidth() < 0) {
 
                 //beat.speed = (int) (10 * screenRatioX);
@@ -203,13 +216,15 @@ public class GameView extends SurfaceView implements Runnable {
             Canvas canvas = getHolder().lockCanvas();
             canvas.drawBitmap(background.background, background.x, background.y, paint);
 
-            canvas.drawBitmap(tracker.getBitmap(), tracker.x, tracker.y, paint);
+
 
             for (Beat beat : beats)
             {
                 canvas.drawBitmap(beat.getBeat(), beat.x, beat.y, paint);
             }
 
+
+            canvas.drawBitmap(tracker.getBitmap(), tracker.x, tracker.y, paint);
 
             canvas.drawText(score + "", screenX / 2f, 164, paint);
 
@@ -227,7 +242,11 @@ public class GameView extends SurfaceView implements Runnable {
             for (Bullet bullet : bullets)
                 canvas.drawBitmap(bullet.bullet, bullet.x, bullet.y, paint);
 
+
+
             getHolder().unlockCanvasAndPost(canvas);
+
+
 
         }
 
