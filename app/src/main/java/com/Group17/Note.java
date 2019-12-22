@@ -5,7 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.Rect;
+import android.graphics.*;
 
 import static com.Group17.GameView.screenRatioX;
 import static com.Group17.GameView.screenRatioY;
@@ -82,6 +82,25 @@ public class Note {
         canvas.drawBitmap(bmp1, new Matrix(), null);
         canvas.drawBitmap(bmp2, new Matrix(), null);
         return bmOverlay;
+    }
+
+    public Bitmap getFadedNote() {
+        if(note != null) {
+            Bitmap bmp1 = box;
+            Bitmap bmp2 = note;
+            Bitmap bmOverlay = Bitmap.createBitmap(bmp1.getWidth(), bmp1.getHeight(), bmp1.getConfig());
+            Canvas canvas = new Canvas(bmOverlay);
+
+            Paint alphaPaint = new Paint();
+            alphaPaint.setColor(0xffffff80); //should be yellow
+            alphaPaint.setAlpha(75);
+
+            canvas.drawBitmap(bmp1, new Matrix(), alphaPaint);
+            canvas.drawBitmap(bmp2, new Matrix(), alphaPaint);
+
+            return bmOverlay;
+        }
+        return null;
     }
 
 }
