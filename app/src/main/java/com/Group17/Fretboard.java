@@ -2,6 +2,7 @@ package com.Group17;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -25,9 +26,20 @@ public class Fretboard {
     private int spaceInterval;
     private Bitmap fretboard;
     private int trackerX;
+    private Bitmap bird;
 
     public Fretboard(Resources res, int screenX, int screenY, JSONArray jsonSong, int fretsOnScreen, int spacing, int tempo, int sleeptime, int trackerX) {
+        bird = BitmapFactory.decodeResource(res, R.drawable.bird1);
+        int birdwidth = bird.getWidth();
+        int birdheight = bird.getHeight();
 
+        birdwidth /= 6;
+        birdheight /= 6;
+
+        birdwidth = (int) (birdwidth);
+        birdheight = (int) (birdheight);
+
+        bird = Bitmap.createScaledBitmap(bird, birdwidth, birdheight, false);
         song = jsonSong;
         xsize = screenX;
         ysize = screenY;
@@ -79,6 +91,13 @@ public class Fretboard {
 
     private void setImage()
     {
+        Iterator<Beat> frets = beatTreadmill.iterator();
+        int i = 0;
+        while (frets.hasNext()) {
+            Beat fret = frets.next();
+            fret.x = i * beatWidth;
+            i++;
+        }
         Beat fret = beatTreadmill.get(beatTreadmill.size()-1);
         Bitmap croppedFretboard = Bitmap.createBitmap(fretboard, beatWidth, 0, beatWidth * fretsOnScreen, fretboard.getHeight());
         Canvas comboImage = new Canvas(fretboard);
@@ -100,7 +119,6 @@ public class Fretboard {
                 notes[3] = new Note(res, beat.getInt(3));
                 notes[4] = new Note(res, beat.getInt(4));
                 notes[5] = new Note(res, beat.getInt(5));
-                //beatTreadmill[beatTreadmill.length-1] = new Beat(res, notes, beatWidth, beatHeight);
                 Beat tempBeat = beatTreadmill.get(0);
                 beatTreadmill.remove(0);
                 beatTreadmill.add(new Beat(res, notes, beatWidth, beatHeight));
@@ -110,7 +128,6 @@ public class Fretboard {
         }
         else
         {
-            //beatTreadmill[beatTreadmill.length-1] = new Beat(res, emptyBeat, beatWidth, beatHeight);
             Beat tempBeat = beatTreadmill.get(0);
             beatTreadmill.remove(0);
             beatTreadmill.add(new Beat(res, emptyBeat, beatWidth, beatHeight));
@@ -118,30 +135,47 @@ public class Fretboard {
         }
     }
 
-    private void checkFeedback()
+    private void checkFeedback(int i)
     {
         int[] feedback = {0,1,0,1,0,1}; //test values
-        Beat fret = beatTreadmill.get(3);
+        Beat fret = beatTreadmill.get(i);
         fret.applyFeedback(feedback); //would pass in feedback here if it exists.
         Canvas comboImage = new Canvas(fretboard);
-        comboImage.drawBitmap(fret.getBeat(), beatWidth * 3, 0, null);
+        comboImage.drawBitmap(fret.getBeat(), beatWidth * i, 0, null);
     }
 
     public Bitmap getNextFrame()
     {
         posX = posX + speed;
 
+
         if(posX >= beatWidth)
         {
             posX = posX - beatWidth;
-            checkFeedback();
             getNextBeat();
             setImage();
 
         }
 
+        int hitbox = posX + trackerX;
+        Iterator<Beat> frets = beatTreadmill.iterator();
+        int i = 0;
+        while (frets.hasNext()) {
+            Beat fret = frets.next();
+            if(fret.isTriggered(hitbox))
+            {
+                checkFeedback(i);
+            }
+            i++;
+        }
+        //Canvas comboImage = new Canvas(fretboard);
+        //comboImage.drawBitmap(bird, hitbox, 0, null);
+
 
         Bitmap croppedFretboard = Bitmap.createBitmap(fretboard, posX, 0, beatWidth * fretsOnScreen, fretboard.getHeight());
+        //Canvas comboImage = new Canvas(croppedFretboard);
+        //comboImage.drawBitmap(bird, hitbox, 0, null);
+
         return croppedFretboard;
     }
 

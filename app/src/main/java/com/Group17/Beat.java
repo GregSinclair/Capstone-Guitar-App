@@ -11,9 +11,11 @@ public class Beat {
 
     public int x, y;
     private int width, height;
+
     Note[] notes;
     Bitmap beatSprite;
 
+    private boolean triggerCollide;
     boolean feedbackApplied = false;
     Resources res; //dumb implementation, temporary
 
@@ -23,6 +25,7 @@ public class Beat {
         this.x = 0;
         this.y = 0;
         this.res = res;
+        triggerCollide = false;
         beatSprite = BitmapFactory.decodeResource(res, R.drawable.fret);
         beatSprite = Bitmap.createScaledBitmap(beatSprite, width, height, false);
         notes = frets;
@@ -75,8 +78,8 @@ public class Beat {
         return bmOverlay;
     }
 
-    Rect getCollisionShape () {
-        return new Rect(x, y, x + width, y + height);
+    public boolean isTriggered (int checkX) {
+        return (x<checkX && x+this.beatSprite.getWidth() >= checkX );
     }
 }
 
