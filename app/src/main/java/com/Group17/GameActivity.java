@@ -1,7 +1,7 @@
 package com.Group17;
 
 import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.Intent;
 import android.content.Context;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -21,6 +21,8 @@ public class GameActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Intent intent = getIntent();
+        String songName = intent.getStringExtra("songName");
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         Point point = new Point();
@@ -29,7 +31,7 @@ public class GameActivity extends AppCompatActivity {
         try {
             String jtxt = loadJSONFromAsset(this);
             JSONObject json = new JSONObject(jtxt);
-            song = json.getJSONArray("Fun");
+            song = json.getJSONArray(songName);
         } catch (JSONException e) {
             e.printStackTrace();
         }

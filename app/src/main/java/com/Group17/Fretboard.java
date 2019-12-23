@@ -154,6 +154,7 @@ public class Fretboard {
             posX = posX - beatWidth;
             getNextBeat();
             setImage();
+
         }
 
         int hitbox = posX + trackerX;
@@ -169,6 +170,8 @@ public class Fretboard {
         }
         //Canvas comboImage = new Canvas(fretboard);
         //comboImage.drawBitmap(bird, hitbox, 0, null);
+
+
         Bitmap croppedFretboard = Bitmap.createBitmap(fretboard, posX, 0, beatWidth * fretsOnScreen, fretboard.getHeight());
         //Canvas comboImage = new Canvas(croppedFretboard);
         //comboImage.drawBitmap(bird, hitbox, 0, null);
