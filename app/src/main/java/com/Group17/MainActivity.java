@@ -22,14 +22,28 @@ public class MainActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.title_screen);
 
-        findViewById(R.id.play).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, GameActivity.class));
+
+                Intent intent = new Intent(MainActivity.this, GameActivity.class);
+                intent.putExtra("songName", "Fun");
+                startActivity(intent);
             }
         });
+
+        findViewById(R.id.button4).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(MainActivity.this, GameActivity.class);
+                intent.putExtra("songName", "Fun2");
+                startActivity(intent);
+            }
+        });
+/*
 
         TextView highScoreTxt = findViewById(R.id.highScoreTxt);
 
@@ -62,5 +76,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+ */
     }
 }

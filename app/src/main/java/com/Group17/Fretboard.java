@@ -137,7 +137,10 @@ public class Fretboard {
             checkFeedback();
             getNextBeat();
             setImage();
+
         }
+
+
         Bitmap croppedFretboard = Bitmap.createBitmap(fretboard, posX, 0, beatWidth * fretsOnScreen, fretboard.getHeight());
         return croppedFretboard;
     }
