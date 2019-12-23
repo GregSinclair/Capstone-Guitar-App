@@ -5,9 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 
-import static com.Group17.GameView.screenRatioX;
-import static com.Group17.GameView.screenRatioY;
-
 public class Bullet {
 
     int x, y, width, height;
@@ -23,8 +20,8 @@ public class Bullet {
         width /= 4;
         height /= 4;
 
-        width = (int) (width*screenRatioX);
-        height = (int) (height*screenRatioY);
+        width = (int) (width);
+        height = (int) (height);
 
         bullet = Bitmap.createScaledBitmap(bullet, width, height, false);
 

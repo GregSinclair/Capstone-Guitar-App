@@ -1,62 +1,47 @@
 package com.Group17;
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.media.AudioAttributes;
-import android.media.AudioManager;
-import android.media.SoundPool;
-import android.os.Build;
-import android.view.MotionEvent;
-import android.view.SurfaceView;
-
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
-
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 
 public class Fretboard {
 
     private int xsize, ysize;
+    private int posX;
+    private int beatWidth, beatHeight;
     private int fretsOnScreen, spacing;
-    private int frets;
-    private Beat[] beatTreadmill;
+    private int speed;
+    private List<Beat> beatTreadmill;
     private JSONArray song;
     private Resources res;
     private Note[] emptyBeat;
     private int beatCounter;
-    private int spaceinterval;
+    private int spaceInterval;
+    private Bitmap fretboard;
+    private int trackerX;
 
-    public Fretboard(Resources res, int screenX, int screenY, JSONArray jsonSong, int fretsOnScreen, int spacing) {
+    public Fretboard(Resources res, int screenX, int screenY, JSONArray jsonSong, int fretsOnScreen, int spacing, int tempo, int sleeptime, int trackerX) {
 
         song = jsonSong;
         xsize = screenX;
         ysize = screenY;
+        posX = 0;
         this.spacing = spacing;
         this.fretsOnScreen = fretsOnScreen;
         this.res = res;
+        this.trackerX = trackerX;
         beatCounter = 0;
-        spaceinterval = spacing;
-
-        //paint = new Paint();
-        //paint.setTextSize(128);
-        //paint.setColor(Color.WHITE);
-
-        //Enough to fill frets on the screen + one extra set
-        beatTreadmill = new Beat[(fretsOnScreen + 1)];
+        spaceInterval = spacing;
+        beatWidth = screenX/fretsOnScreen;
+        beatHeight = screenY;
+        speed = (int)( (tempo * beatWidth * (spacing + 1) * sleeptime) / 60000.0 );
+        beatTreadmill = new ArrayList<>();
         Note emptyNote = new Note(res, -2);
         emptyBeat = new Note[6];
         emptyBeat[0] = emptyNote;
@@ -66,17 +51,44 @@ public class Fretboard {
         emptyBeat[4] = emptyNote;
         emptyBeat[5] = emptyNote;
 
-        for(int i=0; i<beatTreadmill.length; i++)
+        for(int i=0; i<fretsOnScreen+1; i++)
         {
-            if( i == beatTreadmill.length-1){getNextBeat();}
-            else{ beatTreadmill[i] = new Beat(res, emptyBeat); }
+            if( i == fretsOnScreen)
+            {
+                beatTreadmill.add(new Beat(res, emptyBeat, beatWidth, beatHeight));
+                getNextBeat();
+            }
+            else{ beatTreadmill.add(new Beat(res, emptyBeat, beatWidth, beatHeight)); }
         }
+        fretboard = Bitmap.createBitmap(beatWidth*(fretsOnScreen+1), beatHeight, Bitmap.Config.ARGB_8888);
+        initImage();
 
+    }
+
+    private void initImage()
+    {
+        Iterator<Beat> frets = beatTreadmill.iterator();
+        Canvas comboImage = new Canvas(fretboard);
+        int i = 0;
+        while (frets.hasNext()) {
+            Beat fret = frets.next();
+            comboImage.drawBitmap(fret.getBeat(), i*beatWidth, 0, null);
+            i++;
+        }
+    }
+
+    private void setImage()
+    {
+        Beat fret = beatTreadmill.get(beatTreadmill.size()-1);
+        Bitmap croppedFretboard = Bitmap.createBitmap(fretboard, beatWidth, 0, beatWidth * fretsOnScreen, fretboard.getHeight());
+        Canvas comboImage = new Canvas(fretboard);
+        comboImage.drawBitmap(croppedFretboard, 0, 0, null);
+        comboImage.drawBitmap(fret.getBeat(), beatWidth * fretsOnScreen, 0, null);
     }
 
     private void getNextBeat()
     {
-        if(spaceinterval >= spacing)
+        if(spaceInterval >= spacing)
         {
             try {
                 JSONArray beat = song.getJSONArray(beatCounter);
@@ -88,16 +100,46 @@ public class Fretboard {
                 notes[3] = new Note(res, beat.getInt(3));
                 notes[4] = new Note(res, beat.getInt(4));
                 notes[5] = new Note(res, beat.getInt(5));
-                beatTreadmill[beatTreadmill.length-1] = new Beat(res, notes);
+                //beatTreadmill[beatTreadmill.length-1] = new Beat(res, notes, beatWidth, beatHeight);
+                Beat tempBeat = beatTreadmill.get(0);
+                beatTreadmill.remove(0);
+                beatTreadmill.add(new Beat(res, notes, beatWidth, beatHeight));
             } catch (JSONException e) {e.printStackTrace();}
 
-            spaceinterval = 0;
+            spaceInterval = 0;
         }
         else
         {
-            beatTreadmill[beatTreadmill.length-1] = new Beat(res, emptyBeat);
-            spaceinterval++;
+            //beatTreadmill[beatTreadmill.length-1] = new Beat(res, emptyBeat, beatWidth, beatHeight);
+            Beat tempBeat = beatTreadmill.get(0);
+            beatTreadmill.remove(0);
+            beatTreadmill.add(new Beat(res, emptyBeat, beatWidth, beatHeight));
+            spaceInterval++;
         }
+    }
+
+    private void checkFeedback()
+    {
+        int[] feedback = {0,1,0,1,0,1}; //test values
+        Beat fret = beatTreadmill.get(3);
+        fret.applyFeedback(feedback); //would pass in feedback here if it exists.
+        Canvas comboImage = new Canvas(fretboard);
+        comboImage.drawBitmap(fret.getBeat(), beatWidth * 3, 0, null);
+    }
+
+    public Bitmap getNextFrame()
+    {
+        posX = posX + speed;
+
+        if(posX >= beatWidth)
+        {
+            posX = posX - beatWidth;
+            checkFeedback();
+            getNextBeat();
+            setImage();
+        }
+        Bitmap croppedFretboard = Bitmap.createBitmap(fretboard, posX, 0, beatWidth * fretsOnScreen, fretboard.getHeight());
+        return croppedFretboard;
     }
 
 }

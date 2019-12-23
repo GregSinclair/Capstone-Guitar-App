@@ -3,6 +3,7 @@ package com.Group17;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -38,11 +39,9 @@ public class GameView extends SurfaceView implements Runnable {
     private boolean isPlaying, isGameOver = false;
     public int score = 0;
     public static int screenX, screenY;
-    public static float screenRatioX, screenRatioY;
     private Paint paint;
-    private Beat[] beats;
+
     private SharedPreferences prefs;
-    private Random random;
     private SoundPool soundPool;
     private List<Bullet> bullets;
     private int sound;
@@ -51,7 +50,7 @@ public class GameView extends SurfaceView implements Runnable {
     private Background background;
     private int sleeptime = 20;
     private TriggerVisual tracker;
-
+    private Fretboard fretboard;
     public GameView(GameActivity activity, int screenX, int screenY, JSONArray song) {
         super(activity);
         this.activity = activity;
@@ -77,8 +76,7 @@ public class GameView extends SurfaceView implements Runnable {
 
         this.screenX = screenX;
         this.screenY = screenY;
-        screenRatioX = 2160f / screenX;
-        screenRatioY = 1080f / screenY;
+
 
         background = new Background(screenX, screenY, getResources());
 
@@ -89,44 +87,15 @@ public class GameView extends SurfaceView implements Runnable {
         paint = new Paint();
         paint.setTextSize(128);
         paint.setColor(Color.WHITE);
-        beats = new Beat[song.length()];
 
-        try {
+        int fretsOnScreen = 10;
+        int tempo = 80;
+        int spacing = 2;
 
-            for(int i=0; i<song.length(); i++)
-            {
-                JSONArray beat = song.getJSONArray(i);
-
-                Note[] notes = new Note[6];
-                notes[0] = new Note(getResources(), beat.getInt(0));
-                notes[1] = new Note(getResources(), beat.getInt(1));
-                notes[2] = new Note(getResources(), beat.getInt(2));
-                notes[3] = new Note(getResources(), beat.getInt(3));
-                notes[4] = new Note(getResources(), beat.getInt(4));
-                notes[5] = new Note(getResources(), beat.getInt(5));
-                beats[i] = new Beat(getResources(), notes);
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        int i = 0;
-        int tempo = 60;
-        int speed = (int)( (tempo * beats[0].getWidth() * sleeptime) / 60000.0 );
-
-        tracker = new TriggerVisual(getResources(), beats[0].getWidth()/2, screenY);
+        tracker = new TriggerVisual(getResources(), screenX/fretsOnScreen, screenY);
         tracker.x = (int) (screenX * 0.2);
 
-        Beat prevbeat = beats[0];
-        for (Beat beat : beats) {
-            if(i == 0){beat.x = screenX;}
-            else{beat.x = prevbeat.x + prevbeat.getWidth();}
-            beat.speed = speed;
-            prevbeat = beat;
-            i++;
-        }
-
+        fretboard = new Fretboard(getResources(), screenX, (int) (screenY * 0.8), song, fretsOnScreen, spacing, tempo, sleeptime, tracker.x);
     }
 
     @Override
@@ -145,67 +114,15 @@ public class GameView extends SurfaceView implements Runnable {
     private void update () {
 
         if (flight.isGoingUp)
-            flight.y -= 30 * screenRatioY;
+            flight.y -= 30;
         else
-            flight.y += 30 * screenRatioY;
+            flight.y += 30;
 
         if (flight.y < 0)
             flight.y = 0;
 
         if (flight.y >= screenY - flight.height)
             flight.y = screenY - flight.height;
-
-        List<Bullet> trash = new ArrayList<>();
-
-/*
-        for (Bullet bullet : bullets) {
-
-            if (bullet.x > screenX)
-                trash.add(bullet);
-
-            bullet.x += 50 * screenRatioX;
-
-            for (Bird bird : birds) {
-
-                if (Rect.intersects(bird.getCollisionShape(),
-                        bullet.getCollisionShape())) {
-
-                    score++;
-                    bird.x = -500;
-                    bullet.x = screenX + 500;
-                    bird.wasShot = true;
-
-                }
-
-            }
-
-        }
-
-        for (Bullet bullet : trash)
-            bullets.remove(bullet);
-*/
-        for (Beat beat : beats) {
-            beat.x -= beat.speed;
-
-            if (beat.x < screenRatioX*0.15) { //Make an executive decision about where feedback must be applied before error thrown, or be more flexible? Pros and cons
-                int[] feedback = {0,1,0,1,0,1}; //test values
-
-                beat.applyFeedback(feedback); //would pass in feedback here if it exists.
-            }
-
-            if (beat.x + beat.getWidth() < 0) {
-
-                //beat.speed = (int) (10 * screenRatioX);
-                //beat.x = screenX;
-
-            }
-            if (Rect.intersects(beat.getCollisionShape(), flight.getCollisionShape())) {
-
-                //isGameOver = true;
-                //return;
-            }
-
-        }
 
     }
 
@@ -215,15 +132,7 @@ public class GameView extends SurfaceView implements Runnable {
 
             Canvas canvas = getHolder().lockCanvas();
             canvas.drawBitmap(background.background, background.x, background.y, paint);
-
-
-
-            for (Beat beat : beats)
-            {
-                canvas.drawBitmap(beat.getBeat(), beat.x, beat.y, paint);
-            }
-
-
+            canvas.drawBitmap(fretboard.getNextFrame(), 0, (int) (screenY*0.1), paint);
             canvas.drawBitmap(tracker.getBitmap(), tracker.x, tracker.y, paint);
 
             canvas.drawText(score + "", screenX / 2f, 164, paint);

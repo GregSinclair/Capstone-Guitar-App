@@ -7,50 +7,36 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 
-import static com.Group17.GameView.screenRatioX;
-import static com.Group17.GameView.screenRatioY;
-
-import static com.Group17.GameView.screenX;
-import static com.Group17.GameView.screenY;
-
 public class Beat {
 
-    public int x, y, speed;
+    public int x, y;
     private int width, height;
     Note[] notes;
     Bitmap beatSprite;
-    Bitmap beatSprite2;
-    Bitmap beatSprite3;
 
     boolean feedbackApplied = false;
     Resources res; //dumb implementation, temporary
 
-    public Beat(Resources res, Note[] frets){
-
+    public Beat(Resources res, Note[] frets, int width, int height){
+        this.width = width;
+        this.height = height;
+        this.x = 0;
+        this.y = 0;
         this.res = res;
         beatSprite = BitmapFactory.decodeResource(res, R.drawable.fret);
-        beatSprite2 = BitmapFactory.decodeResource(res, R.drawable.fretdot);
-        width = screenX/10;
-        height = (int)(screenY * 0.8);
-        this.x = 0;
-        this.y = (int) (height * 0.1);
         beatSprite = Bitmap.createScaledBitmap(beatSprite, width, height, false);
-        beatSprite2 = Bitmap.createScaledBitmap(beatSprite2, width, height, false);
         notes = frets;
         for(int i=0;i<6;i++){
             if(notes[i] != null && notes[i].getNote() != null) {
                 updateBitmap(i, notes[i].getNote());
             }
         }
-        combine();
-
     }
 
     public void applyFeedback(int[] feedback) { //6 bits
         if (!feedbackApplied) {
             feedbackApplied = true;
 
-            beatSprite3 = null;
             beatSprite = BitmapFactory.decodeResource(res, R.drawable.fret);
             beatSprite = Bitmap.createScaledBitmap(beatSprite, width, height, false);
             for (int i = 0; i < 6; i++) {
@@ -61,22 +47,15 @@ public class Beat {
                     else {
                         updateBitmap(i, notes[i].getFadedNote());
                     }
-
                 }
             }
-            combine();
         }
     }
 
 
-    public Bitmap getBeat () {
-        return this.beatSprite3;
-    }
-    public Bitmap getEmptyBeat () {
-        return this.beatSprite2;
-    }
-    public int getWidth() { return this.beatSprite3.getWidth();}
-    public int getHeight() { return this.beatSprite3.getHeight();}
+    public Bitmap getBeat () {return this.beatSprite;}
+    public int getWidth() { return this.beatSprite.getWidth();}
+    public int getHeight() { return this.beatSprite.getHeight();}
 
     private void updateBitmap(int position, Bitmap newSprite){ //smashes a new sprite onto the current pile
         int top = beatSprite.getHeight()*position/6 + (beatSprite.getHeight()/6 - newSprite.getHeight())/2;
@@ -94,14 +73,6 @@ public class Beat {
         canvas.drawBitmap(bmp1, new Matrix(), null);
         canvas.drawBitmap(bmp2, new Matrix(), null);
         return bmOverlay;
-    }
-
-    private void combine() {
-        Bitmap bmOverlay = Bitmap.createBitmap(beatSprite.getWidth() + beatSprite2.getWidth(), beatSprite.getHeight(), beatSprite.getConfig());
-        Canvas canvas = new Canvas(bmOverlay);
-        canvas.drawBitmap(beatSprite, new Matrix(), null);
-        canvas.drawBitmap(beatSprite2, beatSprite.getWidth(), 0,null);
-        beatSprite3 = bmOverlay;
     }
 
     Rect getCollisionShape () {

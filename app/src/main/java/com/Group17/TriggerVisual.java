@@ -9,9 +9,6 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.*;
 
-import static com.Group17.GameView.screenRatioX;
-import static com.Group17.GameView.screenRatioY;
-
 import static com.Group17.GameView.screenX;
 import static com.Group17.GameView.screenY;
 
