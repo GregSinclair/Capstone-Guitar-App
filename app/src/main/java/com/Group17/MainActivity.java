@@ -38,8 +38,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                Intent intent = new Intent(MainActivity.this, GameActivity.class);
-                intent.putExtra("songName", "Fun2");
+                Intent intent = new Intent(MainActivity.this, BluetoothActivity.class);
+                //intent.putExtra("songName", "Fun2");
                 startActivity(intent);
             }
         });
