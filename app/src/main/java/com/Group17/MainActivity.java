@@ -2,6 +2,10 @@ package com.Group17;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
