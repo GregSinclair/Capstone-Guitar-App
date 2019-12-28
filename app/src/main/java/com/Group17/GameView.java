@@ -1,17 +1,14 @@
 package com.Group17;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 
 import android.graphics.Paint;
 
-import android.graphics.Rect;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 
@@ -23,34 +20,29 @@ import android.view.SurfaceView;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
-import android.media.AudioManager;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class GameView extends SurfaceView implements Runnable {
 
     private Thread thread;
     private boolean isPlaying, isGameOver = false;
-    public int score = 0;
+    private int score = 0;
     public static int screenX, screenY;
     private Paint paint;
 
     private SharedPreferences prefs;
     private SoundPool soundPool;
-    private List<Bullet> bullets;
-    private int sound;
     private Flight flight;
     private GameActivity activity;
     private Background background;
-    private int sleeptime = 20;
+    private final int sleeptime = 50;
     private TriggerVisual tracker;
     private Fretboard fretboard;
+
+    public GameView(Context context) {
+        super(context);
+    }
     public GameView(GameActivity activity, int screenX, int screenY, JSONArray song) {
         super(activity);
         this.activity = activity;
@@ -71,25 +63,23 @@ public class GameView extends SurfaceView implements Runnable {
         } else
             soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
 
-        sound = soundPool.load(activity, R.raw.shoot, 1);
+        //sound = soundPool.load(activity, R.raw.shoot, 1);
 
 
-        this.screenX = screenX;
-        this.screenY = screenY;
+        GameView.screenX = screenX;
+        GameView.screenY = screenY;
 
 
         background = new Background(screenX, screenY, getResources());
 
-        flight = new Flight(this, screenY, getResources());
-
-        bullets = new ArrayList<>();
+        flight = new Flight(screenY, getResources());
 
         paint = new Paint();
         paint.setTextSize(128);
         paint.setColor(Color.WHITE);
 
         int fretsOnScreen = 10;
-        int tempo = 80;
+        int tempo = 40;
         int spacing = 2;
 
         tracker = new TriggerVisual(getResources(), screenX/fretsOnScreen, screenY);
@@ -148,14 +138,7 @@ public class GameView extends SurfaceView implements Runnable {
 
             canvas.drawBitmap(flight.getFlight(), flight.x, flight.y, paint);
 
-            for (Bullet bullet : bullets)
-                canvas.drawBitmap(bullet.bullet, bullet.x, bullet.y, paint);
-
-
-
             getHolder().unlockCanvasAndPost(canvas);
-
-
 
         }
 
@@ -210,6 +193,7 @@ public class GameView extends SurfaceView implements Runnable {
 
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
@@ -222,27 +206,21 @@ public class GameView extends SurfaceView implements Runnable {
             case MotionEvent.ACTION_UP:
                 flight.isGoingUp = false;
                 if (event.getX() > screenX / 2)
-                    flight.toShoot++;
                 break;
         }
 
         return true;
     }
 
-    public void newBullet() {
+    @Override
+    public boolean performClick() {
+        super.performClick();
 
-        if (!prefs.getBoolean("isMute", false))
-            soundPool.play(sound, 1, 1, 0, 0, 1);
-
-        Bullet bullet = new Bullet(getResources());
-        bullet.x = flight.x + flight.width;
-        bullet.y = flight.y + (flight.height / 2);
-        bullets.add(bullet);
-
+        return true;
     }
 
     public String loadJSONFromAsset(Context context) {
-        String json = null;
+        String json;
         try {
             InputStream is = context.getAssets().open("songs.json");
 
