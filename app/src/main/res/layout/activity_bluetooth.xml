@@ -64,7 +64,15 @@
         android:text="SEND"
         android:id="@+id/btnSend"
         android:layout_toRightOf="@+id/editText"
-        android:layout_below="@+id/lvNewDevices"/>
+
+        android:layout_below="@+id/btnONOFF"/>
+
+    <Button
+        android:id="@+id/b_done"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Done"
+        android:layout_below= "@+id/editText"/>
 
 
 </RelativeLayout>

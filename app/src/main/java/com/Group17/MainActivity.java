@@ -9,15 +9,22 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.TextView;
-import android.os.Bundle;
+import android.widget.ListView;
+import android.widget.*;
+
+
 
 public class MainActivity extends AppCompatActivity {
 
     private boolean isMute;
+
+    BluetoothConnectionService mBluetoothConnection;
+
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,12 +35,28 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.title_screen);
 
+
+
+
+
         findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
+
+
+
+
+                if(mBluetoothConnection==null) {
+                    Log.d(TAG, "no bluetooth connection");
+
+                    Toast.makeText(getApplicationContext(), "No bluetooth connection", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 Intent intent = new Intent(MainActivity.this, GameActivity.class);
                 intent.putExtra("songName", "Fun");
+                intent.putExtra("bluetoothConnection", mBluetoothConnection);
                 startActivity(intent);
             }
         });
@@ -42,12 +65,36 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                Intent intent = new Intent(MainActivity.this, BluetoothActivity.class);
+                Intent intent = new Intent(MainActivity.this, SongList.class);
                 //intent.putExtra("songName", "Fun2");
+                Intent bluetoothIntent;
+                startActivityForResult(intent,1);
+
+                //mBluetoothConnection = bluetoothIntent.getParcelableExtra("bluetoothConnection");
+
+
+            }
+        });
+
+
+
+
+
+
+        findViewById(R.id.b_connect).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(MainActivity.this, BluetoothActivity.class);
+
                 startActivity(intent);
             }
         });
+
+
+
 /*
+
 
         TextView highScoreTxt = findViewById(R.id.highScoreTxt);
 
@@ -83,4 +130,24 @@ public class MainActivity extends AppCompatActivity {
 
  */
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "in activity result"); //this doesn't seem to ever trigger
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                if(data != null) {
+                    Log.d(TAG, "intent recieved");
+                    mBluetoothConnection = data.getParcelableExtra("bluetoothConnection");
+                }
+            }
+            if (resultCode == RESULT_CANCELED) {
+                Log.d(TAG, "no intent recieved");
+            }
+        }
+    }
+
+
 }

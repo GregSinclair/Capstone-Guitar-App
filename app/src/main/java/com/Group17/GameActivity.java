@@ -6,6 +6,9 @@ import android.content.Context;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.view.WindowManager;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -16,6 +19,7 @@ import org.json.JSONObject;
 public class GameActivity extends AppCompatActivity {
 
     private GameView gameView;
+    BluetoothConnectionService mBluetoothConnection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +27,12 @@ public class GameActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         String songName = intent.getStringExtra("songName");
+        mBluetoothConnection = intent.getParcelableExtra("bluetoothConnection");
+
+        if(mBluetoothConnection!=null) {
+            Toast.makeText(getApplicationContext(), "Bluetooth persists", Toast.LENGTH_LONG).show();
+        }
+
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         Point point = new Point();

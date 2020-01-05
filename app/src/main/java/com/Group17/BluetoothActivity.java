@@ -34,6 +34,8 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
     Button btnStartConnection;
     Button btnSend;
 
+    Button b_done;
+
     EditText etSend;
 
     private static final UUID MY_UUID_INSECURE =
@@ -170,11 +172,29 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
     protected void onDestroy() {
         Log.d(TAG, "onDestroy: called.");
         super.onDestroy();
-        unregisterReceiver(mBroadcastReceiver1);
-        unregisterReceiver(mBroadcastReceiver2);
-        unregisterReceiver(mBroadcastReceiver3);
-        unregisterReceiver(mBroadcastReceiver4);
-        //mBluetoothAdapter.cancelDiscovery();
+        /*
+        try {
+            unregisterReceiver(mBroadcastReceiver1);
+            unregisterReceiver(mBroadcastReceiver2);
+            unregisterReceiver(mBroadcastReceiver3);
+            unregisterReceiver(mBroadcastReceiver4);
+        } catch(Exception e){}
+
+         */
+        try {
+            unregisterReceiver(mBroadcastReceiver1);
+        } catch(Exception e){}
+        try {
+            unregisterReceiver(mBroadcastReceiver2);
+        } catch(Exception e){}
+        try {
+            unregisterReceiver(mBroadcastReceiver3);
+        } catch(Exception e){}
+        try {
+            unregisterReceiver(mBroadcastReceiver4);
+        } catch(Exception e){}
+
+        mBluetoothAdapter.cancelDiscovery();
     }
 
     @Override
@@ -189,6 +209,8 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
         btnStartConnection = (Button) findViewById(R.id.btnStartConnection);
         btnSend = (Button) findViewById(R.id.btnSend);
         etSend = (EditText) findViewById(R.id.editText);
+
+        b_done = (Button)findViewById(R.id.b_done);
 
         //Broadcasts when bond state changes (ie:pairing)
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
@@ -219,6 +241,18 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
             public void onClick(View view) {
                 byte[] bytes = etSend.getText().toString().getBytes(Charset.defaultCharset());
                 mBluetoothConnection.write(bytes);
+            }
+        });
+
+        b_done.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mBluetoothConnection != null) {
+                    Intent intent = new Intent(BluetoothActivity.this, MainActivity.class);
+                    intent.putExtra("bluetoothConnection", mBluetoothConnection);
+                    setResult(RESULT_OK,intent);
+                    finish();
+                }
             }
         });
 
@@ -279,26 +313,17 @@ public class BluetoothActivity extends AppCompatActivity implements AdapterView.
     public void btnDiscover(View view) {
         Log.d(TAG, "btnDiscover: Looking for unpaired devices.");
 
-        if(mBluetoothAdapter.isDiscovering()){
+        if(mBluetoothAdapter.isDiscovering()) {
             mBluetoothAdapter.cancelDiscovery();
             Log.d(TAG, "btnDiscover: Canceling discovery.");
-
-            //check BT permissions in manifest
-            checkBTPermissions();
-
-            mBluetoothAdapter.startDiscovery();
-            IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-            registerReceiver(mBroadcastReceiver3, discoverDevicesIntent);
         }
-        if(!mBluetoothAdapter.isDiscovering()){
-
             //check BT permissions in manifest
-            checkBTPermissions();
+        checkBTPermissions();
 
-            mBluetoothAdapter.startDiscovery();
-            IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-            registerReceiver(mBroadcastReceiver3, discoverDevicesIntent);
-        }
+        mBluetoothAdapter.startDiscovery();
+        IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(mBroadcastReceiver3, discoverDevicesIntent);
+
     }
 
     /**

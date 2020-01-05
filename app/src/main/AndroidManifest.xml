@@ -32,6 +32,9 @@
         <activity android:name=".BluetoothActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.noActionBar"/>
+        <activity android:name=".SongList"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.noActionBar"/>
     </application>
 
 </manifest>

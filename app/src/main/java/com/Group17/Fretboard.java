@@ -111,7 +111,11 @@ public class Fretboard {
         {
             try {
                 JSONArray beat = song.getJSONArray(beatCounter);
-                beatCounter++;
+                if(!(song.getJSONArray(beatCounter+1).getInt(0)==-5)) {
+                    beatCounter++;
+                }
+
+
                 Note[] notes = new Note[6];
                 notes[0] = new Note(res, beat.getInt(0));
                 notes[1] = new Note(res, beat.getInt(1));

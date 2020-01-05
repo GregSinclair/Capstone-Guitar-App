@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.os.Parcelable;
 import android.util.Log;
 
 import java.io.IOException;
@@ -14,11 +15,18 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.UUID;
 
+import android.os.Parcelable;
+import android.os.Parcel;
+
 /**
  * Created by User on 12/21/2016.
  */
 
-public class BluetoothConnectionService {
+public class BluetoothConnectionService implements Parcelable {
+
+
+
+
     private static final String TAG = "BluetoothConnectionServ";
 
     private static final String appName = "MYAPP";
@@ -26,7 +34,7 @@ public class BluetoothConnectionService {
     private static final UUID MY_UUID_INSECURE =
             UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
 
-    private final BluetoothAdapter mBluetoothAdapter;
+    private BluetoothAdapter mBluetoothAdapter;
     Context mContext;
 
     private AcceptThread mInsecureAcceptThread;
@@ -42,6 +50,31 @@ public class BluetoothConnectionService {
         mContext = context;
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         start();
+    }
+
+    public static final Parcelable.Creator<BluetoothConnectionService> CREATOR
+            = new Parcelable.Creator<BluetoothConnectionService>() {
+        public BluetoothConnectionService createFromParcel(Parcel in) {
+            return new BluetoothConnectionService(in);
+        }
+
+        public BluetoothConnectionService[] newArray(int size) {
+            return new BluetoothConnectionService[size];
+        }
+    };
+
+    public int describeContents() {
+        return 0;
+    }
+
+    public void writeToParcel(Parcel out, int flags) {
+
+
+        //out.writeParcelable(this, 0); //this might not be allowed
+    }
+
+    private BluetoothConnectionService(Parcel in) {
+        mBluetoothAdapter = in.readParcelable(BluetoothConnectionService.class.getClassLoader());
     }
 
 
