@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.os.Build;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
 import android.util.Log;
@@ -32,7 +33,7 @@ public class BluetoothConnectionService implements Parcelable {
 
     private static final String appName = "MYAPP";
 
-    private static final UUID MY_UUID_INSECURE =
+    private static UUID MY_UUID_INSECURE =
             UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
 
     private BluetoothAdapter mBluetoothAdapter;
@@ -91,6 +92,7 @@ public class BluetoothConnectionService implements Parcelable {
 
         public AcceptThread(){
             BluetoothServerSocket tmp = null;
+
 
             // Create a new listening server socket
             try{
@@ -163,7 +165,7 @@ public class BluetoothConnectionService implements Parcelable {
             // given BluetoothDevice
             try {
                 Log.d(TAG, "ConnectThread: Trying to create InsecureRfcommSocket using UUID: "
-                        +MY_UUID_INSECURE );
+                        +deviceUUID);
                 tmp = mmDevice.createRfcommSocketToServiceRecord(deviceUUID);
             } catch (IOException e) {
                 Log.e(TAG, "ConnectThread: Could not create InsecureRfcommSocket " + e.getMessage());
@@ -212,8 +214,11 @@ public class BluetoothConnectionService implements Parcelable {
      * Start the chat service. Specifically start AcceptThread to begin a
      * session in listening (server) mode. Called by the Activity onResume()
      */
-    public synchronized void start() {
+    public synchronized void start() { //note that this isn't the same Start used below, it's a thread method. This one is called when the BCS object is created
         Log.d(TAG, "start");
+
+
+
 
         // Cancel any thread attempting to make a connection
         if (mConnectThread != null) {
@@ -235,19 +240,29 @@ public class BluetoothConnectionService implements Parcelable {
     public void startClient(BluetoothDevice device,UUID uuid){
         Log.d(TAG, "startClient: Started.");
 
+        ParcelUuid[] supportedUuids = device.getUuids();
+        if(supportedUuids!=null){
+            MY_UUID_INSECURE = supportedUuids[0].getUuid();
+            Log.d(TAG, "Changed default uuid");
+        }
+
+
         //initprogress dialog
         mProgressDialog = ProgressDialog.show(mContext,"Connecting Bluetooth"
                 ,"Please Wait...",true);
 
-        ParcelUuid[] supportedUuids = device.getUuids();
+        /*
         if(supportedUuids!=null){
             Log.d(TAG, "BCS startClient used supportedUuids");
             mConnectThread = new ConnectThread(device, (supportedUuids[0]).getUuid());
         }
         else {
             Log.d(TAG, "BCS startClient used default UUID");
-            mConnectThread = new ConnectThread(device, uuid);
+
         }
+
+         */
+        mConnectThread = new ConnectThread(device, uuid);
         mConnectThread.start();
     }
 
@@ -284,6 +299,9 @@ public class BluetoothConnectionService implements Parcelable {
 
             mmInStream = tmpIn;
             mmOutStream = tmpOut;
+            if (tmpIn==null||tmpOut==null){
+                Log.d(TAG, "ConnectedThread: a stream is null");
+            }
         }
 
         public void run(){

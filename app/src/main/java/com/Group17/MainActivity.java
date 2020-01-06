@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothDevice;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -84,6 +85,9 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.b_connect).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                int myVersion = Build.VERSION.SDK_INT;
+                Log.d(TAG, "Running API version " + myVersion);
 
                 Intent intent = new Intent(MainActivity.this, BluetoothActivity.class);
 
