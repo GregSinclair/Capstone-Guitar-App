@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.os.ParcelUuid;
 import android.os.Parcelable;
 import android.util.Log;
 
@@ -238,7 +239,15 @@ public class BluetoothConnectionService implements Parcelable {
         mProgressDialog = ProgressDialog.show(mContext,"Connecting Bluetooth"
                 ,"Please Wait...",true);
 
-        mConnectThread = new ConnectThread(device, uuid);
+        ParcelUuid[] supportedUuids = device.getUuids();
+        if(supportedUuids!=null){
+            Log.d(TAG, "BCS startClient used supportedUuids");
+            mConnectThread = new ConnectThread(device, (supportedUuids[0]).getUuid());
+        }
+        else {
+            Log.d(TAG, "BCS startClient used default UUID");
+            mConnectThread = new ConnectThread(device, uuid);
+        }
         mConnectThread.start();
     }
 
