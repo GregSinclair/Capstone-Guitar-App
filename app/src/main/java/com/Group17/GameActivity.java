@@ -19,7 +19,7 @@ import org.json.JSONObject;
 public class GameActivity extends AppCompatActivity {
 
     private GameView gameView;
-    BluetoothConnectionService mBluetoothConnection;
+    ConnectedThread mBluetoothConnection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +49,7 @@ public class GameActivity extends AppCompatActivity {
         if(song != null)
         {
             gameView = new GameView(this, point.x, point.y, song);
+            gameView.setBluetooth(mBluetoothConnection);
             setContentView(gameView);
         }
 

@@ -27,18 +27,20 @@ public class GameView extends SurfaceView implements Runnable {
 
     private Thread thread;
     private boolean isPlaying, isGameOver = false;
-    private int score = 0;
+
     public static int screenX, screenY;
     private Paint paint;
 
     private SharedPreferences prefs;
     private SoundPool soundPool;
-    private Flight flight;
+
     private GameActivity activity;
     private Background background;
     private final int sleeptime = 50;
     private TriggerVisual tracker;
     private Fretboard fretboard;
+
+    private ConnectedThread mBluetoothConnection;
 
     public GameView(Context context) {
         super(context);
@@ -72,7 +74,7 @@ public class GameView extends SurfaceView implements Runnable {
 
         background = new Background(screenX, screenY, getResources());
 
-        flight = new Flight(screenY, getResources());
+
 
         paint = new Paint();
         paint.setTextSize(128);
@@ -86,6 +88,7 @@ public class GameView extends SurfaceView implements Runnable {
         tracker.x = (int) (screenX * 0.2);
 
         fretboard = new Fretboard(getResources(), screenX, (int) (screenY * 0.8), song, fretsOnScreen, spacing, tempo, sleeptime, tracker.x);
+        fretboard.setBluetooth(mBluetoothConnection);
     }
 
     @Override
@@ -103,16 +106,7 @@ public class GameView extends SurfaceView implements Runnable {
 
     private void update () {
 
-        if (flight.isGoingUp)
-            flight.y -= 30;
-        else
-            flight.y += 30;
 
-        if (flight.y < 0)
-            flight.y = 0;
-
-        if (flight.y >= screenY - flight.height)
-            flight.y = screenY - flight.height;
 
     }
 
@@ -125,18 +119,18 @@ public class GameView extends SurfaceView implements Runnable {
             canvas.drawBitmap(fretboard.getNextFrame(), 0, (int) (screenY*0.1), paint);
             canvas.drawBitmap(tracker.getBitmap(), tracker.x, tracker.y, paint);
 
-            canvas.drawText(score + "", screenX / 2f, 164, paint);
+
 
             if (isGameOver) {
                 isPlaying = false;
-                canvas.drawBitmap(flight.getDead(), flight.x, flight.y, paint);
+
                 getHolder().unlockCanvasAndPost(canvas);
-                saveIfHighScore();
+
                 waitBeforeExiting ();
                 return;
             }
 
-            canvas.drawBitmap(flight.getFlight(), flight.x, flight.y, paint);
+
 
             getHolder().unlockCanvasAndPost(canvas);
 
@@ -156,15 +150,6 @@ public class GameView extends SurfaceView implements Runnable {
 
     }
 
-    private void saveIfHighScore() {
-
-        if (prefs.getInt("highscore", 0) < score) {
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putInt("highscore", score);
-            editor.apply();
-        }
-
-    }
 
     private void sleep () {
         try {
@@ -193,19 +178,20 @@ public class GameView extends SurfaceView implements Runnable {
 
     }
 
+    public void setBluetooth(ConnectedThread mBTC){
+        this.mBluetoothConnection = mBTC;
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if (event.getX() < screenX / 2) {
-                    flight.isGoingUp = true;
-                }
+
                 break;
             case MotionEvent.ACTION_UP:
-                flight.isGoingUp = false;
-                if (event.getX() > screenX / 2)
+
                 break;
         }
 

@@ -44,7 +44,7 @@ public class Beat {
             beatSprite = Bitmap.createScaledBitmap(beatSprite, width, height, false);
             for (int i = 0; i < 6; i++) {
                 if (notes[i] != null && notes[i].getNote() != null) {
-                    if(feedback[i] == 0){
+                    if(feedback[i] != 1){ //1 for good, other numbers will eventually be reserved for different feedback
                         updateBitmap(i, notes[i].getNote());
                     }
                     else {

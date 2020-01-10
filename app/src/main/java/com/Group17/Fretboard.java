@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 
 public class Fretboard {
@@ -26,20 +27,14 @@ public class Fretboard {
     private int spaceInterval;
     private Bitmap fretboard;
     private int trackerX;
-    private Bitmap bird;
+
+
+    private ConnectedThread mBluetoothConnection;
+    private JSONObject lastFeedback = null;
 
     public Fretboard(Resources res, int screenX, int screenY, JSONArray jsonSong, int fretsOnScreen, int spacing, int tempo, int sleeptime, int trackerX) {
-        bird = BitmapFactory.decodeResource(res, R.drawable.bird1);
-        int birdwidth = bird.getWidth();
-        int birdheight = bird.getHeight();
 
-        birdwidth /= 6;
-        birdheight /= 6;
 
-        birdwidth = (int) (birdwidth);
-        birdheight = (int) (birdheight);
-
-        bird = Bitmap.createScaledBitmap(bird, birdwidth, birdheight, false);
         song = jsonSong;
         xsize = screenX;
         ysize = screenY;
@@ -139,19 +134,39 @@ public class Fretboard {
         }
     }
 
-    private void checkFeedback(int i)
-    {
-        int[] feedback = {0,1,0,1,0,1}; //test values
+    public void setBluetooth(ConnectedThread mBTC){
+        mBluetoothConnection=mBTC;
+    }
+
+    private void getFeedback(){
+        lastFeedback = mBluetoothConnection.getLastJSONMessage();
+    }
+
+    private void checkFeedback(int i){
+
+        try {
+            int sequence = lastFeedback.getInt("beat");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        int[] feedback = new int[6];//there is a duplicate call check in the applyFeedback method, though it would make more sense here
+        for(int j=0;j<6;j++){
+            try {
+                feedback[j]=lastFeedback.getInt(""+j); //if theres some array issue, make sure this is allowed
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
         Beat fret = beatTreadmill.get(i);
         fret.applyFeedback(feedback); //would pass in feedback here if it exists.
         Canvas comboImage = new Canvas(fretboard);
         comboImage.drawBitmap(fret.getBeat(), beatWidth * i, 0, null);
+
     }
 
     public Bitmap getNextFrame()
     {
         posX = posX + speed;
-
 
         if(posX >= beatWidth)
         {
@@ -160,6 +175,7 @@ public class Fretboard {
             setImage();
 
         }
+            //getFeedback(); //disabled until we have proper JSON object passing
 
         int hitbox = posX + trackerX;
         Iterator<Beat> frets = beatTreadmill.iterator();
@@ -168,7 +184,7 @@ public class Fretboard {
             Beat fret = frets.next();
             if(fret.isTriggered(hitbox))
             {
-                checkFeedback(i);
+                //checkFeedback(i); //disabled until we have proper JSON object passing
             }
             i++;
         }

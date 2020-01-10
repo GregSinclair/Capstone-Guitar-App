@@ -23,7 +23,8 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isMute;
 
-    BluetoothConnectionService mBluetoothConnection;
+    //BluetoothConnectionService mBluetoothConnection;
+    ConnectedThread mBluetoothConnection = null;
 
     private static final String TAG = "MainActivity";
 
@@ -44,15 +45,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-
-
-
-
                 if(mBluetoothConnection==null) {
                     Log.d(TAG, "no bluetooth connection");
 
                     Toast.makeText(getApplicationContext(), "No bluetooth connection", Toast.LENGTH_LONG).show();
-                    return;
+                    //return;
                 }
 
                 Intent intent = new Intent(MainActivity.this, GameActivity.class);
@@ -77,11 +74,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-
-
-
-
         findViewById(R.id.b_connect).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -89,16 +81,13 @@ public class MainActivity extends AppCompatActivity {
                 int myVersion = Build.VERSION.SDK_INT;
                 Log.d(TAG, "Running API version " + myVersion);
 
-                Intent intent = new Intent(MainActivity.this, BluetoothActivity.class);
+                Intent intent = new Intent(MainActivity.this, BluetoothConnection.class);
 
-                startActivity(intent);
+                startActivityForResult(intent,1); //tries to get a BTA intent
             }
         });
 
-
-
 /*
-
 
         TextView highScoreTxt = findViewById(R.id.highScoreTxt);
 
@@ -133,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
 
 
  */
-    }
+    }//end of on create
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -143,12 +132,12 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == 1) {
             if (resultCode == RESULT_OK) {
                 if(data != null) {
-                    Log.d(TAG, "intent recieved");
+                    Log.d(TAG, "intent received");
                     mBluetoothConnection = data.getParcelableExtra("bluetoothConnection");
                 }
             }
             if (resultCode == RESULT_CANCELED) {
-                Log.d(TAG, "no intent recieved");
+                Log.d(TAG, "no intent received");
             }
         }
     }
