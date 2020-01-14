@@ -74,6 +74,10 @@ public class ConnectedThread extends Thread implements Parcelable {
 
         mmInStream = tmpIn;
         mmOutStream = tmpOut;
+
+        KeepingAlive ohOhOhOh = new KeepingAlive(mmSocket, mmInStream, mmOutStream);
+        ohOhOhOh.start();
+
     }
 
     public void run() {
@@ -164,5 +168,37 @@ public class ConnectedThread extends Thread implements Parcelable {
      */
     public void writeToParcel(Parcel dest, int flags) {
         //dest.writeParcelable(this,0);
+    }
+
+    private class KeepingAlive extends Thread{
+        private final BluetoothSocket mmSocket;
+        private final InputStream mmInStream;
+        private final OutputStream mmOutStream;
+        private boolean running = true;
+        public KeepingAlive(BluetoothSocket socket, InputStream input, OutputStream output){
+            mmSocket=socket;
+            mmInStream=input;
+            mmOutStream=output;
+        }
+        public void run() {
+            while (running) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                write();
+            }
+        }
+        public void terminate(){ //really ought to call this somewhere
+            running = false;
+        }
+        private void write(){
+            Log.d(TAG, "Oh Oh Oh Oh STAYIN ALIVE");
+            byte[] bytes = "Keeping alive".getBytes(); //verify that this works, might need to choose utf8 or something
+            try {
+                mmOutStream.write(bytes);
+            } catch (IOException e) { Log.d(TAG, "KeepingAlive Thread: Write Error"); }
+        }
     }
 }

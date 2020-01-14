@@ -29,6 +29,8 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Random;
@@ -257,6 +259,24 @@ public class BluetoothConnection extends AppCompatActivity {
         private final BluetoothDevice mmDevice;
 
         public ConnectThread(BluetoothDevice device) {
+            Log.d(TAG, "Connect Thread: OnCreate");
+            BluetoothSocket tmp = null;
+            mmDevice = device;
+            Method m = null;
+            try {m = device.getClass().getMethod("createInsecureRfcommSocket", new Class[]{int.class});}
+            catch (NoSuchMethodException ex){Log.d(TAG, "Connect Thread: NoMethod");}
+            try {
+                int bt_port_to_connect = 5;
+
+                // MY_UUID is the app's UUID string, also used by the server code
+                //tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
+                tmp = (BluetoothSocket) m.invoke(device, bt_port_to_connect);
+            }
+            catch (IllegalAccessException e1) {Log.d(TAG, "Connect Thread: IllegalAccessException");}
+            catch (InvocationTargetException e2) {Log.d(TAG, "Connect Thread: TargetException");}
+            mmSocket = tmp;
+
+        /*
             // Use a temporary object that is later assigned to mmSocket,
             // because mmSocket is final
             Log.d(TAG, "Connect Thread: OnCreate");
@@ -269,6 +289,8 @@ public class BluetoothConnection extends AppCompatActivity {
                 tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
             } catch (IOException e) { }
             mmSocket = tmp;
+
+         */
         }
 
         public void run() {
