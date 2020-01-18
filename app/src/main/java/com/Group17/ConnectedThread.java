@@ -20,6 +20,7 @@ public class ConnectedThread extends Thread implements Parcelable {
     private final BluetoothSocket mmSocket;
     private final InputStream mmInStream;
     private final OutputStream mmOutStream;
+    private KeepingAlive ohOhOhOh;
 
     private String lastMessage="";
     private JSONObject lastJSONObject=null; //the json will be sent over as text and then converted
@@ -75,7 +76,7 @@ public class ConnectedThread extends Thread implements Parcelable {
         mmInStream = tmpIn;
         mmOutStream = tmpOut;
 
-        KeepingAlive ohOhOhOh = new KeepingAlive(mmSocket, mmInStream, mmOutStream);
+        ohOhOhOh = new KeepingAlive(this);
         ohOhOhOh.start();
 
     }
@@ -171,14 +172,10 @@ public class ConnectedThread extends Thread implements Parcelable {
     }
 
     private class KeepingAlive extends Thread{
-        private final BluetoothSocket mmSocket;
-        private final InputStream mmInStream;
-        private final OutputStream mmOutStream;
+        private final ConnectedThread theConnectedThread;
         private boolean running = true;
-        public KeepingAlive(BluetoothSocket socket, InputStream input, OutputStream output){
-            mmSocket=socket;
-            mmInStream=input;
-            mmOutStream=output;
+        public KeepingAlive(ConnectedThread theCT){
+            theConnectedThread = theCT;
         }
         public void run() {
             while (running) {
@@ -195,10 +192,7 @@ public class ConnectedThread extends Thread implements Parcelable {
         }
         private void write(){
             Log.d(TAG, "Oh Oh Oh Oh STAYIN ALIVE");
-            byte[] bytes = "Keeping alive".getBytes(); //verify that this works, might need to choose utf8 or something
-            try {
-                mmOutStream.write(bytes);
-            } catch (IOException e) { Log.d(TAG, "KeepingAlive Thread: Write Error"); }
+            theConnectedThread.write("Keep connection active");
         }
     }
 }
