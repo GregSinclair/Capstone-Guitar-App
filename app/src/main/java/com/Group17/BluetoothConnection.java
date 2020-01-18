@@ -25,6 +25,9 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,7 +63,7 @@ public class BluetoothConnection extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-
+    private int sequence=0;
 
 
 
@@ -96,8 +99,22 @@ public class BluetoothConnection extends AppCompatActivity {
                     return;
                 }
                 else{
-                    bluetooth_message = "button 1 pressed*";
-                    mConnectedThread.write(bluetooth_message.getBytes());
+                    int[] values = new int[]{1,2,3,4,0,-2};
+                    JSONObject json = new JSONObject();
+                    try {
+                        json.put("type", 2);
+                        json.put("sequence", sequence);
+                        sequence++;
+                        json.put("timeStamp", 420);
+                        JSONArray a = new JSONArray();
+                        for(int i=0;i<6;i++){
+                            a.put(values[i]);
+                        }
+                        json.put("values", a);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    mConnectedThread.write(json.toString().getBytes());
                 }
             }
         });
@@ -110,8 +127,22 @@ public class BluetoothConnection extends AppCompatActivity {
                     return;
                 }
                 else{
-                    bluetooth_message = "very different message than the other button*";
-                    mConnectedThread.write(bluetooth_message.getBytes());
+                    int[] values = new int[]{3,2,1,0,0,0};
+                    JSONObject json = new JSONObject();
+                    try {
+                        json.put("type", 2);
+                        json.put("sequence", sequence);
+                        sequence++;
+                        json.put("timeStamp", 420);
+                        JSONArray a = new JSONArray();
+                        for(int i=0;i<6;i++){
+                            a.put(values[i]);
+                        }
+                        json.put("values", a);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    mConnectedThread.write(json.toString().getBytes());
                 }
             }
         });
@@ -138,7 +169,7 @@ public class BluetoothConnection extends AppCompatActivity {
                     return;
                 }
                 else{
-                    Toast.makeText(getApplicationContext(),mConnectedThread.getLastMessage(),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),(mConnectedThread.getLastJSONMessage()).toString(),Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -322,11 +353,6 @@ public class BluetoothConnection extends AppCompatActivity {
                 Log.d(TAG, "Connect Thread: Cannot Start");
                 return;
             }
-
-
-
-
-
         }
 
         /** Will cancel an in-progress connection, and close the socket */

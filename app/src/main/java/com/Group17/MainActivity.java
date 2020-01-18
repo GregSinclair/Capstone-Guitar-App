@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Intent intent = new Intent(MainActivity.this, SongList.class);
                 //intent.putExtra("songName", "Fun2");
-                Intent bluetoothIntent;
+
                 startActivityForResult(intent,1);
 
                 //mBluetoothConnection = bluetoothIntent.getParcelableExtra("bluetoothConnection");
@@ -84,6 +84,24 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, BluetoothConnection.class);
 
                 startActivityForResult(intent,1); //tries to get a BTA intent
+            }
+        });
+
+        findViewById(R.id.button_training).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if(mBluetoothConnection==null) {
+                    Log.d(TAG, "no bluetooth connection");
+
+                    Toast.makeText(getApplicationContext(), "No bluetooth connection", Toast.LENGTH_LONG).show();
+                    //return;
+                }
+
+                Intent intent = new Intent(MainActivity.this, TrainingActivity.class);
+                intent.putExtra("noteName", "A");
+                intent.putExtra("bluetoothConnection", mBluetoothConnection);
+                startActivity(intent);
             }
         });
 

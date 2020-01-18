@@ -6,14 +6,24 @@ import android.os.Parcelable;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
+
+
+
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 import java.lang.Object;
+import java.nio.charset.StandardCharsets;
 
 public class ConnectedThread extends Thread implements Parcelable {
 
@@ -88,7 +98,7 @@ public class ConnectedThread extends Thread implements Parcelable {
         // Keep listening to the InputStream until an exception occurs
 
         String message="";
-
+        Gson g = new Gson();
         while (true) {
             Log.d(TAG, "Connected Thread: Looping");
             try {
@@ -97,8 +107,83 @@ public class ConnectedThread extends Thread implements Parcelable {
                 String oneChar= new String(buffer);
                 Log.d(TAG, "Connected Thread: got character: "+oneChar);
                 if(oneChar.contains("*")){
-                    Log.d(TAG, "Connected Thread: message recieved: "+message);
+                    Log.d(TAG, "Connected Thread: message received: "+message);
                     lastMessage=message;
+                    //Toast.makeText(getApplicationContext(),message,Toast.LENGTH_SHORT).show();
+                    message="";
+                }
+                else if(oneChar.contains("^")){
+                    Log.d(TAG, "Connected Thread: json received: "+message);
+                    //JSONObject newJSON = g.toJson(message);
+                    InputStream stream = new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
+                    JsonReader reader = new JsonReader(new InputStreamReader(stream));
+                    //JsonReader reader = Json.createReader(stream);
+                    // Get the JsonObject structure from JsonReader.
+                    //JsonObject newJsonObject = reader.readObject(); //looks like this method isnt supposed to be used ever
+
+                    int messageType=0;
+                    int sequence=0;
+                    int timeStamp=0;
+                    int[] results = new int[6];
+
+                    reader.beginObject();
+                    while (reader.hasNext()) {
+                        String name = reader.nextName();
+                        if (name.equals("type")) {
+                            messageType = reader.nextInt();
+                        } else if (name.equals("sequence")) {
+                            sequence = reader.nextInt();
+                        } else if (name.equals("timeStamp")) {
+                            timeStamp = reader.nextInt();
+                        } else if (name.equals("values")){
+                            reader.beginArray();
+                            int i=0;
+                            while (reader.hasNext()&&i<6) {
+                                results[i]=reader.nextInt();
+                                i++;
+                            }
+                            reader.endArray();
+                        } else if (name.equals("first")) {
+                            results[0] = reader.nextInt();
+                        }
+                        else if (name.equals("second")) {
+                            results[1] = reader.nextInt();
+                        }
+                        else if (name.equals("third")) {
+                            results[2] = reader.nextInt();
+                        }
+                        else if (name.equals("fourth")) {
+                            results[3] = reader.nextInt();
+                        }
+                        else if (name.equals("fifth")) {
+                            results[4] = reader.nextInt();
+                        }
+                        else if (name.equals("sixth")) {
+                            results[5] = reader.nextInt();
+                        }else {
+                            reader.skipValue();
+                        }
+                    }
+                    reader.endObject();
+
+                    JSONObject json = new JSONObject();
+                    json.put("type", messageType);
+                    json.put("sequence", sequence);
+                    json.put("timeStamp", timeStamp);
+                    json.put("values", results);
+
+                    reader.close();
+
+                    //message types:
+                    //1:ping
+                    //2:phone to rpi
+                    //3:results
+                    //4:error
+
+                    if (messageType==3){
+                        lastJSONObject=json;
+                    }
+
                     //Toast.makeText(getApplicationContext(),message,Toast.LENGTH_SHORT).show();
                     message="";
                 }
@@ -109,12 +194,17 @@ public class ConnectedThread extends Thread implements Parcelable {
                 //mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
 
                 Log.d(TAG, "Connected Thread: Sent Read");
-            } catch (IOException e) {
+            } catch (IOException | JSONException e) {
                 Log.d(TAG, "Connected Thread: Loop Escape");
                 break;
             }
         }
     }
+
+
+
+
+
 
     /* Call this from the main activity to send data to the remote device */
     public void write(byte[] bytes) {
@@ -131,6 +221,7 @@ public class ConnectedThread extends Thread implements Parcelable {
             mmOutStream.write(bytes);
         } catch (IOException e) { Log.d(TAG, "Connected Thread: Write Error"); }
     }
+
 
     //make another one for json
 
