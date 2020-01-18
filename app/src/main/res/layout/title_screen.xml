@@ -19,7 +19,7 @@
         android:id="@+id/button4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Song 2"
+        android:text="Song List"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
@@ -47,6 +47,16 @@
         android:text="Connect"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button3" />
+
+    <Button
+        android:id="@+id/button_training"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Training"
+        app:layout_constraintTop_toBottomOf="@+id/button4"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:layout_editor_absoluteX="388dp" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

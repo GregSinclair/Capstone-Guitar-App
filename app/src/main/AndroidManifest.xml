@@ -19,6 +19,9 @@
         <activity android:name=".GameActivity"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.noActionBar"/>
+        <activity android:name=".TrainingActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.noActionBar"/>
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait"
@@ -29,9 +32,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".BluetoothActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.noActionBar"/>
+
         <activity android:name=".SongList"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.noActionBar"/>
