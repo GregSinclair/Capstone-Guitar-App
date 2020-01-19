@@ -1,18 +1,12 @@
 package com.Group17;
 
 import android.bluetooth.BluetoothSocket;
-import android.os.Parcel;
-import android.os.Parcelable;
+
+
+import android.util.JsonReader;
 import android.util.Log;
-import android.widget.Toast;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonReader;
 
 
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -21,11 +15,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-
-import java.lang.Object;
 import java.nio.charset.StandardCharsets;
 
-public class ConnectedThread extends Thread implements Parcelable {
+public class ConnectedThread extends Thread {
 
     private final BluetoothSocket mmSocket;
     private final InputStream mmInStream;
@@ -37,32 +29,6 @@ public class ConnectedThread extends Thread implements Parcelable {
 
     private static final String TAG = "ConnectedThread";
 
-    public static final Parcelable.Creator<ConnectedThread> CREATOR
-            = new Parcelable.Creator<ConnectedThread>() {
-        public ConnectedThread createFromParcel(Parcel in) {
-            return new ConnectedThread(in);
-        }
-
-        public ConnectedThread[] newArray(int size) {
-            return new ConnectedThread[size];
-        }
-    };
-
-    /*
-    private ConnectedThread(Parcel givenParcel){
-        //this.mmSocket = givenParcel.readTypedObject(BluetoothSocket.class.getClassLoader());
-        this.mmSocket = givenParcel.readParcelable(BluetoothSocket.class.getClassLoader()); //is bts even parcelable? might be errors because of this
-        this.mmInStream = givenParcel.readParcelable(InputStream.class.getClassLoader());
-        this.mmOutStream = givenParcel.readParcelable(OutputStream.class.getClassLoader());
-    }
-
-     */
-
-    private ConnectedThread(Parcel givenParcel){
-        mmSocket=null;
-        mmInStream=null;
-        mmOutStream=null;
-    }
 
 
 
@@ -99,7 +65,7 @@ public class ConnectedThread extends Thread implements Parcelable {
         // Keep listening to the InputStream until an exception occurs
 
         String message="";
-        Gson g = new Gson();
+
         while (true) {
             Log.d(TAG, "Connected Thread: Looping");
             try {
@@ -243,25 +209,6 @@ public class ConnectedThread extends Thread implements Parcelable {
 
 
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    /*
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeParcelable(mmSocket,0);
-        dest.writeParcelable(mmInStream,0);
-        dest.writeParcelable(mmOutStream,0);
-
-    }
-
-     */
-    public void writeToParcel(Parcel dest, int flags) {
-        //dest.writeParcelable(this,0);
-    }
-
     private class KeepingAlive extends Thread{
         private final ConnectedThread theConnectedThread;
         private boolean running = true;
@@ -275,15 +222,24 @@ public class ConnectedThread extends Thread implements Parcelable {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                write();
+                try {
+                    write();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
         public void terminate(){ //really ought to call this somewhere
             running = false;
         }
-        private void write(){
+        private void write() throws JSONException {
             Log.d(TAG, "Oh Oh Oh Oh STAYIN ALIVE");
-            theConnectedThread.write("Keep connection active");
+            JSONObject json = new JSONObject();
+            json.put("type", 1);
+            json.put("sequence", -1);
+            json.put("timeStamp", 69);
+            json.put("values", new int[6]);
+            theConnectedThread.write(json.toString().getBytes());
         }
     }
 }

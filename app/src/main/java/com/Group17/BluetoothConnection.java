@@ -154,9 +154,9 @@ public class BluetoothConnection extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(),"No connection, no sense exiting",Toast.LENGTH_SHORT).show();
                 }
                 if(mConnectedThread != null) {
-                    Intent intent = new Intent(BluetoothConnection.this, MainActivity.class);
-                    intent.putExtra("bluetoothConnection", mConnectedThread);
-                    setResult(RESULT_OK,intent);
+                    //Intent intent = new Intent(BluetoothConnection.this, MainActivity.class);
+                    //intent.putExtra("bluetoothConnection", mConnectedThread);
+                    //setResult(RESULT_OK,intent);
                     finish();
                 }
             }
@@ -217,7 +217,7 @@ public class BluetoothConnection extends AppCompatActivity {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
             // Device doesn't support Bluetooth
-            Toast.makeText(getApplicationContext(),"Your Device doesn't support bluetooth. you can play as Single player",Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getApplicationContext(),"Your Device doesn't support bluetooth. you can play as Single player",Toast.LENGTH_SHORT).show();
             finish();
         }
 
@@ -277,7 +277,7 @@ public class BluetoothConnection extends AppCompatActivity {
                     Log.d(TAG, "onReceive: STATE OFF");
 
                     connected(socket);
-                    mConnectedThread.write("accept thread completed*");
+                    //mConnectedThread.write("accept thread completed*");
                     socket=null;
                 }
             }
@@ -341,7 +341,7 @@ public class BluetoothConnection extends AppCompatActivity {
                     // Do work to manage the connection (in a separate thread)
                     bluetooth_message = "Initial message*and the second line*";
                     connected(mmSocket);
-                    mConnectedThread.write("connect thread completed*");
+                    //mConnectedThread.write("connect thread completed*");
 
                 }
                 else{Log.d(TAG, "Connect Thread: Connected Socket Null");}

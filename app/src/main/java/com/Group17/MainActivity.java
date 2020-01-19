@@ -45,16 +45,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if(mBluetoothConnection==null) {
-                    Log.d(TAG, "no bluetooth connection");
-
-                    Toast.makeText(getApplicationContext(), "No bluetooth connection", Toast.LENGTH_LONG).show();
-                    //return;
-                }
-
                 Intent intent = new Intent(MainActivity.this, GameActivity.class);
                 intent.putExtra("songName", "Fun");
-                intent.putExtra("bluetoothConnection", mBluetoothConnection);
+
                 startActivity(intent);
             }
         });
@@ -83,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Intent intent = new Intent(MainActivity.this, BluetoothConnection.class);
 
-                startActivityForResult(intent,1); //tries to get a BTA intent
+                startActivity(intent);
             }
         });
 
@@ -100,7 +93,6 @@ public class MainActivity extends AppCompatActivity {
 
                 Intent intent = new Intent(MainActivity.this, TrainingActivity.class);
                 intent.putExtra("noteName", "A");
-                intent.putExtra("bluetoothConnection", mBluetoothConnection);
                 startActivity(intent);
             }
         });
@@ -143,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
     }//end of on create
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) { //this should never be reached as of jan18
         Log.d(TAG, "in activity result"); //this doesn't seem to ever trigger
         super.onActivityResult(requestCode, resultCode, data);
 

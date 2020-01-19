@@ -19,7 +19,7 @@ import org.json.JSONObject;
 public class GameActivity extends AppCompatActivity {
 
     private GameView gameView;
-    ConnectedThread mBluetoothConnection;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,11 +27,8 @@ public class GameActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         String songName = intent.getStringExtra("songName");
-        mBluetoothConnection = intent.getParcelableExtra("bluetoothConnection");
 
-        if(mBluetoothConnection!=null) {
-            Toast.makeText(getApplicationContext(), "Bluetooth persists", Toast.LENGTH_LONG).show();
-        }
+
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -49,7 +46,7 @@ public class GameActivity extends AppCompatActivity {
         if(song != null)
         {
             gameView = new GameView(this, point.x, point.y, song);
-            gameView.setBluetooth(mBluetoothConnection);
+
             setContentView(gameView);
         }
 

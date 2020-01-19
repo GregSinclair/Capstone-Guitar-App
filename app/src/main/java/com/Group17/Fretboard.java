@@ -1,9 +1,14 @@
 package com.Group17;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.os.IBinder;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -28,9 +33,11 @@ public class Fretboard {
     private Bitmap fretboard;
     private int trackerX;
 
-
     private ConnectedThread mBluetoothConnection;
+    //private BluetoothService mBluetoothConnection;
+
     private JSONObject lastFeedback = null;
+
 
     public Fretboard(Resources res, int screenX, int screenY, JSONArray jsonSong, int fretsOnScreen, int spacing, int tempo, int sleeptime, int trackerX) {
 
@@ -69,6 +76,10 @@ public class Fretboard {
         }
         fretboard = Bitmap.createBitmap(beatWidth*(fretsOnScreen+1), beatHeight, Bitmap.Config.ARGB_8888);
         initImage();
+
+        //ServiceConnection conn = new ServiceConnection();
+        //IBinder bluetoothBinder = Context.bindService(BluetoothService.class));
+
 
     }
 
