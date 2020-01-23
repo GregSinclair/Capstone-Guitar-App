@@ -4,11 +4,14 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 
 import android.content.res.Resources;
 
+import android.graphics.Matrix;
 import android.graphics.Paint;
 
 import android.media.AudioAttributes;
@@ -25,6 +28,8 @@ import java.io.InputStream;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+
+import static android.graphics.Bitmap.createScaledBitmap;
 
 public class TrainingView extends SurfaceView implements Runnable {
 
@@ -43,11 +48,12 @@ public class TrainingView extends SurfaceView implements Runnable {
 
     private Beat trainingBeat;
     private Note[] notes;
+    private Bitmap neck;
 
     public TrainingView(Context context) {
         super(context);
     }
-    public TrainingView(TrainingActivity activity, int screenX, int screenY, JSONArray song) { //pass in a json array containing 1 note
+    public TrainingView(TrainingActivity activity, int screenX, int screenY, JSONArray song) throws JSONException { //pass in a json array containing 1 note
         super(activity);
         this.activity = activity;
         prefs = activity.getSharedPreferences("game", Context.MODE_PRIVATE);
@@ -70,8 +76,8 @@ public class TrainingView extends SurfaceView implements Runnable {
         //sound = soundPool.load(activity, R.raw.shoot, 1);
 
 
-        GameView.screenX = screenX;
-        GameView.screenY = screenY;
+        this.screenX = screenX;
+        this.screenY = screenY;
 
 
         background = new Background(screenX, screenY, getResources());
@@ -84,24 +90,70 @@ public class TrainingView extends SurfaceView implements Runnable {
 
         Resources res = getResources();
 
+
+
+
+
         JSONArray beat = null;
         try {
             beat = song.getJSONArray(0);
 
             Note[] notes = new Note[6];
-            notes[0] = new Note(res, beat.getInt(0));
-            notes[1] = new Note(res, beat.getInt(1));
-            notes[2] = new Note(res, beat.getInt(2));
-            notes[3] = new Note(res, beat.getInt(3));
-            notes[4] = new Note(res, beat.getInt(4));
-            notes[5] = new Note(res, beat.getInt(5));
+            notes[0] = new Note(res, beat.getInt(0), screenX, screenY);
+            notes[1] = new Note(res, beat.getInt(1), screenX, screenY);
+            notes[2] = new Note(res, beat.getInt(2), screenX, screenY);
+            notes[3] = new Note(res, beat.getInt(3), screenX, screenY);
+            notes[4] = new Note(res, beat.getInt(4), screenX, screenY);
+            notes[5] = new Note(res, beat.getInt(5), screenX, screenY);
 
 
-            trainingBeat = new Beat(res, notes, (int)(screenX*0.1) ,screenY);
+            trainingBeat = new Beat(res, notes, (int)(screenX*0.1) ,(int)(screenY*0.8));
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
+        final int[] neckSequence = {0,0,1,0,1,0,1,0,1,0,0,2,0,0,1,0,1,0,1,0,0};
+
+        Bitmap[] neckParts = new Bitmap[5];
+        beat = song.getJSONArray(0); //I assume reading from JSON isn't destructive
+        int lowest = 99;
+        for (int i=0;i<6;i++) {
+            if (beat.getInt(i)>0 && beat.getInt(i)<lowest) {
+                lowest = beat.getInt(i);
+            }
+        }
+        if (lowest==99){
+            return;
+        }
+        for(int i=0;i<5;i++){
+            switch(neckSequence[lowest+i-1]){
+                case 0:
+                    neckParts[i] = BitmapFactory.decodeResource(res, R.drawable.sprite_trainerbg0_0);
+                    break;
+                case 1:
+                    neckParts[i] = BitmapFactory.decodeResource(res, R.drawable.sprite_trainerbg1_0);
+                    break;
+                case 2:
+                    neckParts[i] = BitmapFactory.decodeResource(res, R.drawable.sprite_trainerbg2_0);
+                    break;
+            }
+        }
+        neck = Bitmap.createBitmap(5*neckParts[0].getWidth(), neckParts[0].getHeight(), Bitmap.Config.ARGB_8888); //scale this for screen resolution after its complete
+        for(int i=0;i<5;i++){
+            updateBitmap(i*neckParts[0].getWidth(),0,neckParts[i]);
+        }
+
+        Bitmap finger = BitmapFactory.decodeResource(res, R.drawable.sprite_trainer_finger_0);
+        finger = createScaledBitmap(finger, (int)(neckParts[0].getWidth()*0.5), (int)(neckParts[0].getHeight()*0.15), false);
+        for(int i=0;i<6;i++){
+            if(beat.getInt(i)>0){
+                updateBitmap((neck.getWidth() - (int)(neckParts[0].getWidth()*0.75) - (neckParts[0].getWidth()*(beat.getInt(i)-lowest))), (int)(neck.getHeight()*(0.025+(i*0.164))), finger); //changed the json while testing, change it back
+            }
+        }
+
+
+
+        neck = createScaledBitmap(neck, (int)(screenX*0.6), (int)(screenY*0.8), false);
     }
 
     @Override
@@ -117,6 +169,15 @@ public class TrainingView extends SurfaceView implements Runnable {
 
     }
 
+    private void updateBitmap(int x, int y, Bitmap newSprite){ //smashes a new sprite onto the current pile
+
+        Bitmap result = Bitmap.createBitmap(neck.getWidth(), neck.getHeight(), neck.getConfig());
+        Canvas canvas = new Canvas(result);
+        canvas.drawBitmap(neck, new Matrix(), null);
+        canvas.drawBitmap(newSprite, x, y,null); //based on the    drawBitmap(Bitmap bitmap, float left, float top, Paint paint)
+        this.neck = result;
+    }
+
     private void update () {
 
     }
@@ -127,8 +188,8 @@ public class TrainingView extends SurfaceView implements Runnable {
 
             Canvas canvas = getHolder().lockCanvas();
             canvas.drawBitmap(background.background, background.x, background.y, paint);
-            canvas.drawBitmap(trainingBeat.getBeat(), (int)(screenX*0.05),(int)(screenY*0.1), paint);
-
+            canvas.drawBitmap(trainingBeat.getBeat(), (int)(screenX*0.1),(int)(screenY*0.1), paint);
+            canvas.drawBitmap(neck, (int)(screenX*0.3),(int)(screenY*0.1), paint);
             //draw the finger position sprite here. it is static.
 
 

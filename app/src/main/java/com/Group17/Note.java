@@ -7,14 +7,12 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.*;
 
-import static com.Group17.GameView.screenX;
-import static com.Group17.GameView.screenY;
 
 public class Note {
     public int width, height;
     Bitmap note;
     Bitmap box; //these are maintained so that the sprite can be reproduced. alternate idea is to create all needed sprites in the constructor and swap as needed, do this in v2
-    public Note (Resources res, int x) {
+    public Note (Resources res, int x, int screenX, int screenY) {
 
         switch (x)
         {

@@ -16,6 +16,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static com.Group17.GameView.screenX;
+import static com.Group17.GameView.screenY;
+
 
 public class Fretboard {
 
@@ -56,7 +59,7 @@ public class Fretboard {
         beatHeight = screenY;
         speed = (int)( (tempo * beatWidth * (spacing + 1) * sleeptime) / 60000.0 );
         beatTreadmill = new ArrayList<>();
-        Note emptyNote = new Note(res, -2);
+        Note emptyNote = new Note(res, -2, screenX, screenY);
         emptyBeat = new Note[6];
         emptyBeat[0] = emptyNote;
         emptyBeat[1] = emptyNote;
@@ -123,12 +126,12 @@ public class Fretboard {
 
 
                 Note[] notes = new Note[6];
-                notes[0] = new Note(res, beat.getInt(0));
-                notes[1] = new Note(res, beat.getInt(1));
-                notes[2] = new Note(res, beat.getInt(2));
-                notes[3] = new Note(res, beat.getInt(3));
-                notes[4] = new Note(res, beat.getInt(4));
-                notes[5] = new Note(res, beat.getInt(5));
+                notes[0] = new Note(res, beat.getInt(0), screenX, screenY);
+                notes[1] = new Note(res, beat.getInt(1), screenX, screenY);
+                notes[2] = new Note(res, beat.getInt(2), screenX, screenY);
+                notes[3] = new Note(res, beat.getInt(3), screenX, screenY);
+                notes[4] = new Note(res, beat.getInt(4), screenX, screenY);
+                notes[5] = new Note(res, beat.getInt(5), screenX, screenY);
                 Beat tempBeat = beatTreadmill.get(0);
                 beatTreadmill.remove(0);
                 beatTreadmill.add(new Beat(res, notes, beatWidth, beatHeight));

@@ -28,7 +28,7 @@ public class TrainingActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         String songName = intent.getStringExtra("noteName");
-        mBluetoothConnection = intent.getParcelableExtra("bluetoothConnection");
+        mBluetoothConnection = intent.getParcelableExtra("bluetoothConnection"); //gonna have to remove all this now that we use Service
 
         if(mBluetoothConnection!=null) {
             Toast.makeText(getApplicationContext(), "Bluetooth persists", Toast.LENGTH_LONG).show();
@@ -49,7 +49,11 @@ public class TrainingActivity extends AppCompatActivity {
 
         if(song != null)
         {
-            trainView = new TrainingView(this, point.x, point.y, song);
+            try {
+                trainView = new TrainingView(this, point.x, point.y, song);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             setContentView(trainView);
         }
 
