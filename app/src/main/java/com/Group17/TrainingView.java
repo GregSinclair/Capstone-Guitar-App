@@ -107,7 +107,7 @@ public class TrainingView extends SurfaceView implements Runnable {
             notes[5] = new Note(res, beat.getInt(5), screenX, screenY);
 
 
-            trainingBeat = new Beat(res, notes, (int)(screenX*0.1) ,(int)(screenY*0.8));
+            trainingBeat = new Beat(res, notes, (int)(screenX*0.1) ,(int)(screenY*0.8), 0);
         } catch (JSONException e) {
             e.printStackTrace();
         }
