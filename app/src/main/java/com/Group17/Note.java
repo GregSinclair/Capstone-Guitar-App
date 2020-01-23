@@ -12,9 +12,12 @@ import static com.Group17.GameView.screenY;
 
 public class Note {
     public int width, height;
+    public int noteNum;
     Bitmap note;
     Bitmap box; //these are maintained so that the sprite can be reproduced. alternate idea is to create all needed sprites in the constructor and swap as needed, do this in v2
     public Note (Resources res, int x) {
+
+        noteNum = x;
 
         switch (x)
         {
@@ -98,6 +101,11 @@ public class Note {
             return bmOverlay;
         }
         return null;
+    }
+
+    public int getNoteNum()
+    {
+        return noteNum;
     }
 
 }

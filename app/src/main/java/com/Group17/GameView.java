@@ -1,8 +1,10 @@
 package com.Group17;
 
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -15,6 +17,8 @@ import android.media.AudioManager;
 import android.media.SoundPool;
 
 import android.os.Build;
+import android.os.IBinder;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 
@@ -40,16 +44,20 @@ public class GameView extends SurfaceView implements Runnable {
     private TriggerVisual tracker;
     private Fretboard fretboard;
 
-    private ConnectedThread mBluetoothConnection;
+
+    private BluetoothService myService;
+    private boolean isServiceBound;
+    private ServiceConnection serviceConnection;
+    private  Intent serviceIntent;
+
 
     public GameView(Context context) {
         super(context);
     }
-    public GameView(GameActivity activity, int screenX, int screenY, JSONArray song) {
+    public GameView(GameActivity activity, int screenX, int screenY, JSONArray song, BluetoothService myService) {
         super(activity);
         this.activity = activity;
         prefs = activity.getSharedPreferences("game", Context.MODE_PRIVATE);
-
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
@@ -88,7 +96,6 @@ public class GameView extends SurfaceView implements Runnable {
         tracker.x = (int) (screenX * 0.2);
 
         fretboard = new Fretboard(getResources(), screenX, (int) (screenY * 0.8), song, fretsOnScreen, spacing, tempo, sleeptime, tracker.x);
-        fretboard.setBluetooth(mBluetoothConnection);
     }
 
     @Override
@@ -178,9 +185,6 @@ public class GameView extends SurfaceView implements Runnable {
 
     }
 
-    public void setBluetooth(ConnectedThread mBTC){
-        this.mBluetoothConnection = mBTC;
-    }
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
