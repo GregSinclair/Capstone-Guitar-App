@@ -1,8 +1,10 @@
 package com.Group17;
 
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -20,16 +22,22 @@ import android.media.AudioManager;
 import android.media.SoundPool;
 
 import android.os.Build;
+import android.os.IBinder;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.json.*;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
+
 
 import static android.graphics.Bitmap.createScaledBitmap;
+import android.content.ServiceConnection;
+import android.widget.Toast;
 
 public class TrainingView extends SurfaceView implements Runnable {
 
@@ -50,12 +58,23 @@ public class TrainingView extends SurfaceView implements Runnable {
     private Note[] notes;
     private Bitmap neck;
 
+    private BluetoothService myService;
+    private boolean isServiceBound=false;
+
+    private static final String TAG = "TrainingView";
+
+    private String bluetooth_message="00";
+
     public TrainingView(Context context) {
         super(context);
     }
-    public TrainingView(TrainingActivity activity, int screenX, int screenY, JSONArray song) throws JSONException { //pass in a json array containing 1 note
+    public TrainingView(TrainingActivity activity, int screenX, int screenY, JSONArray song, BluetoothService myService) throws JSONException { //pass in a json array containing 1 note
         super(activity);
         this.activity = activity;
+        this.myService = myService;
+        if(myService!=null){
+            isServiceBound=true;
+        }
         prefs = activity.getSharedPreferences("game", Context.MODE_PRIVATE);
 
 
@@ -89,10 +108,6 @@ public class TrainingView extends SurfaceView implements Runnable {
         paint.setColor(Color.WHITE);
 
         Resources res = getResources();
-
-
-
-
 
         JSONArray beat = null;
         try {
@@ -151,9 +166,25 @@ public class TrainingView extends SurfaceView implements Runnable {
             }
         }
 
-
-
         neck = createScaledBitmap(neck, (int)(screenX*0.6), (int)(screenY*0.8), false);
+
+        if(isServiceBound && myService != null && myService.isRunning()){
+            JSONArray mJSONArray = new JSONArray();
+            int[] values = {beat.getInt(0),beat.getInt(1),beat.getInt(2),beat.getInt(3),beat.getInt(4),beat.getInt(5)};
+            for(int value : values){mJSONArray.put(value);}
+            JSONObject json = new JSONObject();
+            json.put("type", 2);
+            json.put("sequence", 0);
+            json.put("timeStamp", 420);
+            json.put("values", mJSONArray);
+            json.put("duration", -1); //duration of -1 indicates training mode
+
+            myService.sendMessage(json.toString()); //not totally sure about this one
+            return;
+        }
+
+
+
     }
 
     @Override
@@ -180,6 +211,23 @@ public class TrainingView extends SurfaceView implements Runnable {
 
     private void update () {
 
+        if(isServiceBound && myService != null && myService.isRunning()){
+            String stringMessage = myService.getMessage();
+            try {
+                JSONObject jsonMessage = new JSONObject(stringMessage);
+                //need to configure this on the RPI end to only send stuff at times that make sense, can't just overwrite the successful ones immediately.
+                //have it do the usual OR thing, and then clear if it detects more than a second of silence?
+                int[] values = new int[6];
+                JSONArray jValues = jsonMessage.getJSONArray("values");
+                for(int i=0;i<6;i++){
+                    values[i]=jValues.getInt(i);
+                }
+                trainingBeat.applyFeedback(values);
+                trainingBeat.resetFeedbackCheck();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void draw () {
@@ -287,5 +335,9 @@ public class TrainingView extends SurfaceView implements Runnable {
         return json;
 
     }
+
+
+
+
 
 }

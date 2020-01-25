@@ -46,9 +46,9 @@ public class GameView extends SurfaceView implements Runnable {
 
 
     private BluetoothService myService;
-    private boolean isServiceBound;
-    private ServiceConnection serviceConnection;
-    private  Intent serviceIntent;
+    private boolean isServiceBound=false;
+
+    private static final String TAG = "GameView";
 
 
     public GameView(Context context) {
@@ -56,7 +56,11 @@ public class GameView extends SurfaceView implements Runnable {
     }
     public GameView(GameActivity activity, int screenX, int screenY, JSONArray song, BluetoothService myService) {
         super(activity);
+
         this.activity = activity;
+
+        this.myService = myService;
+
         prefs = activity.getSharedPreferences("game", Context.MODE_PRIVATE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -95,13 +99,13 @@ public class GameView extends SurfaceView implements Runnable {
         tracker = new TriggerVisual(getResources(), screenX/fretsOnScreen, screenY);
         tracker.x = (int) (screenX * 0.2);
 
-        fretboard = new Fretboard(getResources(), screenX, (int) (screenY * 0.8), song, fretsOnScreen, spacing, tempo, sleeptime, tracker.x);
+        fretboard = new Fretboard(getResources(), screenX, (int) (screenY * 0.8), song, fretsOnScreen, spacing, tempo, sleeptime, tracker.x, myService);
     }
 
     @Override
     public void run() {
 
-        while (isPlaying) {
+        while (true) {
 
             update ();
             draw ();
@@ -112,7 +116,8 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void update () {
-
+        //this will be where we maintain the bluetooth connection and try to reconnect if it drops
+        //currently nothing is implemented in the game or training that involves this, assumed it runs perfectly and doesn't need to be manually stopped
 
 
     }

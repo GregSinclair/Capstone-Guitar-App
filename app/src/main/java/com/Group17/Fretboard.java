@@ -35,7 +35,21 @@ public class Fretboard {
     private int beatIndexCounter;
     private JSONObject lastFeedback = null;
     private String nextMessage;
-    public Fretboard(Resources res, int screenX, int screenY, JSONArray jsonSong, int fretsOnScreen, int spacing, int tempo, int sleeptime, int trackerX) {
+
+    private BluetoothService myService;
+    private boolean isServiceBound=false;
+
+    private static final String TAG = "Fretboard";
+
+    private String bluetooth_message="00";
+
+    private int duration;
+
+    public Fretboard(Resources res, int screenX, int screenY, JSONArray jsonSong, int fretsOnScreen, int spacing, int tempo, int sleeptime, int trackerX, BluetoothService myService) {
+
+        this.myService = myService;
+
+        duration = tempo; //figure out the actual conversion later
 
         beatIndexCounter = 0;
         song = jsonSong;
@@ -141,25 +155,54 @@ public class Fretboard {
         }
     }
 
+    private boolean getFeedback(){
+
+        //move this into gameview update and have it pass in the message to a global variable
+        try {
+            JSONObject feedback = new JSONObject(myService.getMessage());
+            if(lastFeedback.getInt("sequence")!=feedback.getInt("sequence")){ //tempted to force it to check if its +1 of last time, but that could lead to one sequence error fucking everything up
+                lastFeedback = feedback;
+                return true;
+            }
+            else {
+                Log.d(TAG, "Fretboard: sequence error in received message");
+                return false;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     private void checkFeedback(int i){
 
         try {
-            int sequence = lastFeedback.getInt("beat");
+            int sequence = lastFeedback.getInt("sequence");
+            if(sequence != i){
+                return;
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
         int[] feedback = new int[6];//there is a duplicate call check in the applyFeedback method, though it would make more sense here
-        for(int j=0;j<6;j++){
-            try {
-                feedback[j]=lastFeedback.getInt(""+j); //if theres some array issue, make sure this is allowed
-            } catch (JSONException e) {
-                e.printStackTrace();
+        try {
+            JSONArray jFeedback = lastFeedback.getJSONArray("values");
+
+            for(int j=0;j<6;j++){
+                try {
+                    feedback[j]=jFeedback.getInt(j);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
         Beat fret = beatTreadmill.get(i);
-        fret.applyFeedback(feedback); //would pass in feedback here if it exists.
+        fret.applyFeedback(feedback);
         Canvas comboImage = new Canvas(fretboard);
-        comboImage.drawBitmap(fret.getBeat(), beatWidth * i, 0, null);
+        comboImage.drawBitmap(fret.getBeat(), beatWidth * i, 0, null); //this implementation is still weird to me.
+                                                                                    //the bitmap is larger than the screen? this might be why it runs like ass on my main phone
 
     }
 
@@ -182,8 +225,14 @@ public class Fretboard {
         int i = 0;
         while (frets.hasNext()) {
             Beat fret = frets.next();
-            if(fret.isTriggered(hitbox) && !fret.isSent())
-            {
+
+            if(fret.isSent() && !fret.gottenFeedback()){ //case where we are looking for the response
+                getFeedback(); //was originally going to have this return a boolean, but that's useless if this calls multiple times in a loop
+                checkFeedback(i);
+                //looks like the sprite is redrawn in CF, is this all there is?
+            }
+
+            else if(fret.isTriggered(hitbox) && !fret.isSent()) { //case where we must send a new message
                 fret.sendBeat();
                 int noteArray[] = fret.getNoteArray();
                 JSONObject messageJSON = new JSONObject();
@@ -191,9 +240,12 @@ public class Fretboard {
                 for(int value : noteArray){mJSONArray.put(value);}
                 try
                 {
-                    messageJSON.put("Beat",mJSONArray);
-                    messageJSON.put("Type","FFT");
-                    messageJSON.put("BeatIndex",fret.getIndex());
+                    messageJSON.put("type",2);
+                    messageJSON.put("sequence",i);
+                    messageJSON.put("timeStamp",0);
+                    messageJSON.put("values",mJSONArray);  //there may be some inconsistency here with putting it as an int array vs json array
+                                                                //Using a json array is better. gonna go through and change all to that
+                    messageJSON.put("duration",duration);
                 }
                 catch(org.json.JSONException er)
                 {
@@ -201,9 +253,10 @@ public class Fretboard {
                 }
                 Log.d("Fretboard", messageJSON.toString());
                 nextMessage = messageJSON.toString();
+                myService.sendMessage(nextMessage); //not totally sure about this one
 
-                //checkFeedback(i); //disabled until we have proper JSON object passing
             }
+
             i++;
         }
         //Canvas comboImage = new Canvas(fretboard);

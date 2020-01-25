@@ -109,6 +109,14 @@ public class Beat {
         return noteNums;
     }
     public int getIndex(){return beatIndex;}
+
+    public boolean gottenFeedback(){
+        return feedbackApplied;
+    }
+
+    public void resetFeedbackCheck(){
+        feedbackApplied = false;
+    }
 }
 
 

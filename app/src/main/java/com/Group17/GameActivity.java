@@ -26,7 +26,9 @@ public class GameActivity extends AppCompatActivity {
     private boolean isServiceBound;
     private ServiceConnection serviceConnection;
     private  Intent serviceIntent;
-
+    private JSONArray song;
+    private Point point;
+    private GameActivity context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,9 +39,10 @@ public class GameActivity extends AppCompatActivity {
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        Point point = new Point();
+        point = new Point();
         getWindowManager().getDefaultDisplay().getSize(point);
-        JSONArray song = null;
+        song = null;
+        context = this;
         try {
             String jtxt = loadJSONFromAsset(this);
             JSONObject json = new JSONObject(jtxt);
@@ -48,21 +51,20 @@ public class GameActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
-        bindService();
-        if(myService  != null && myService.isRunning())
-        {
-            Log.d("ACTIVITY SetBluetooth", "Not NULL");
-            if(song != null)
-            {
-                gameView = new GameView(this, point.x, point.y, song, myService);
-                setContentView(gameView);
+        gameView = new GameView(this, point.x, point.y, song, myService);
+        setContentView(gameView);
+        //serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
+        //bindService();
+        /*
+        while(myService==null){
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
-        else
-        {
-            Log.d("ACTIVITY SetBluetooth", "NULL");
-        }
+        */
+
 
 
 
@@ -77,7 +79,7 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        gameView.resume();
+        //gameView.resume();
     }
 
     public String loadJSONFromAsset(Context context) {
@@ -111,6 +113,8 @@ public class GameActivity extends AppCompatActivity {
                     BluetoothService.BluetoothServiceBinder myServiceBinder=(BluetoothService.BluetoothServiceBinder)iBinder;
                     myService=myServiceBinder.getService();
                     isServiceBound=true;
+                    play();
+
                 }
 
                 @Override
@@ -128,6 +132,24 @@ public class GameActivity extends AppCompatActivity {
         if(isServiceBound){
             unbindService(serviceConnection);
             isServiceBound=false;
+        }
+    }
+
+    public void play()
+    {
+        if(myService  != null && myService.isRunning())
+        {
+            Log.d("ACTIVITY SetBluetooth", "Not NULL");
+            if(song != null)
+            {
+                //gameView = new GameView(this, point.x, point.y, song, myService);
+                //setContentView(gameView);
+                //gameView.run();
+            }
+        }
+        else
+        {
+            Log.d("ACTIVITY SetBluetooth", "NULL");
         }
     }
 }

@@ -86,6 +86,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        findViewById(R.id.button_training).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(MainActivity.this, TrainingActivity.class);
+                intent.putExtra("noteName", "A");
+                startActivity(intent); //tries to get a BTA intent
+            }
+        });
+
         serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
 
         startService(serviceIntent);

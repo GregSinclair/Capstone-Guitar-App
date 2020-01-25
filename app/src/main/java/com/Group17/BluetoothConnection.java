@@ -43,19 +43,14 @@ public class BluetoothConnection extends AppCompatActivity {
         setContentView(R.layout.connection_layout);
 
         serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
-        bindService();
-        if(isServiceBound && myService  != null && myService.isRunning())
-        {
-            Log.d(TAG, "MyService Not NULL");
-        }
-        else
-        {
-            Log.d("ACTIVITY SetBluetooth", "NULL");
-        }
 
-        initialize_layout();
-        initialize_bluetooth();
-        initialize_clicks();
+        //BluetoothServiceInterface myBSI = new BluetoothServiceInterface(serviceIntent);
+        //myBSI.run();
+
+        //gotta get the results out of that
+
+        bindService();
+
 
         Button button1 = (Button) findViewById(R.id.button1);
         Button button2 = (Button) findViewById(R.id.button2);
@@ -183,6 +178,19 @@ public class BluetoothConnection extends AppCompatActivity {
                     BluetoothService.BluetoothServiceBinder myServiceBinder=(BluetoothService.BluetoothServiceBinder)iBinder;
                     myService=myServiceBinder.getService();
                     isServiceBound=true;
+
+                    if(isServiceBound && myService  != null && myService.isRunning())
+                    {
+                        Log.d(TAG, "MyService Not NULL");
+                    }
+                    else
+                    {
+                        Log.d("ACTIVITY SetBluetooth", "NULL");
+                    }
+
+                    initialize_layout();
+                    initialize_bluetooth();
+                    initialize_clicks();
                 }
 
                 @Override
