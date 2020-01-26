@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class GameView extends SurfaceView implements Runnable {
 
@@ -99,13 +101,13 @@ public class GameView extends SurfaceView implements Runnable {
         tracker = new TriggerVisual(getResources(), screenX/fretsOnScreen, screenY);
         tracker.x = (int) (screenX * 0.2);
 
-        fretboard = new Fretboard(getResources(), screenX, (int) (screenY * 0.8), song, fretsOnScreen, spacing, tempo, sleeptime, tracker.x, myService);
+        fretboard = new Fretboard(getResources(), screenX, (int) (screenY * 0.8), song, fretsOnScreen, spacing, tempo, sleeptime, tracker.x);
     }
 
     @Override
     public void run() {
 
-        while (true) {
+        while (isPlaying) {
 
             update ();
             draw ();
@@ -116,6 +118,13 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void update () {
+
+        try {
+            fretboard.setFeedback(new JSONObject(myService.getMessage()));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         //this will be where we maintain the bluetooth connection and try to reconnect if it drops
         //currently nothing is implemented in the game or training that involves this, assumed it runs perfectly and doesn't need to be manually stopped
 
@@ -172,11 +181,13 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     public void resume () {
+    }
 
+    public void beginGame()
+    {
         isPlaying = true;
         thread = new Thread(this);
         thread.start();
-
     }
 
     public void pause () {

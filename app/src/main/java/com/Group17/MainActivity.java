@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.*;
 
+import org.json.JSONObject;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -25,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
 
     //BluetoothConnectionService mBluetoothConnection;
     ConnectedThread mBluetoothConnection = null;
+
+    private String theSong;
 
     private static final String TAG = "MainActivity";
 
@@ -53,7 +56,12 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 Intent intent = new Intent(MainActivity.this, GameActivity.class);
-                intent.putExtra("songName", "Fun");
+                if(theSong==null){
+                    intent.putExtra("songName", "Fun");
+                }
+                else{
+                    intent.putExtra("songName", theSong);
+                }
                 startActivity(intent);
             }
         });
@@ -107,11 +115,11 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "in activity result"); //this doesn't seem to ever trigger
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == 1) {
+        if (requestCode == 1) { //song choice
             if (resultCode == RESULT_OK) {
                 if(data != null) {
                     Log.d(TAG, "intent received");
-                    mBluetoothConnection = data.getParcelableExtra("bluetoothConnection");
+                    theSong = data.getParcelableExtra("bluetoothConnection");
                 }
             }
             if (resultCode == RESULT_CANCELED) {
@@ -121,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void bindService(){
+    private void bindService(){ //doubt these are needed
         if(serviceConnection==null){
             serviceConnection=new ServiceConnection() {
                 @Override

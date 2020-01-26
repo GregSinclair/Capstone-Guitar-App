@@ -2,6 +2,9 @@ package com.Group17;
 
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
@@ -137,7 +140,25 @@ public class ConnectedThread extends Thread {
         }
         private void write(){
             Log.d(TAG, "Oh Oh Oh Oh STAYIN ALIVE");
-            byte[] bytes = "Keeping alive".getBytes(); //verify that this works, might need to choose utf8 or something
+            JSONObject json = new JSONObject();
+            try {
+                JSONArray beat = new JSONArray();
+                beat.put(0);
+                beat.put(0);
+                beat.put(2);
+                beat.put(2);
+                beat.put(2);
+                beat.put(0);
+                json.put("type", 2);
+                json.put("sequence", 0);
+                json.put("timeStamp", 0);
+                json.put("values", beat);
+                json.put("duration", 500);
+            } catch (JSONException e) {
+            e.printStackTrace();
+            }
+
+            byte[] bytes = json.toString().getBytes(); //verify that this works, might need to choose utf8 or something
             try {
                 mmOutStream.write(bytes);
             } catch (IOException e) { Log.d(TAG, "KeepingAlive Thread: Write Error"); }

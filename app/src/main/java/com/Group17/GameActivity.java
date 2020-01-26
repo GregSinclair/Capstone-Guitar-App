@@ -33,7 +33,6 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         Intent intent = getIntent();
         String songName = intent.getStringExtra("songName");
 
@@ -51,24 +50,24 @@ public class GameActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        gameView = new GameView(this, point.x, point.y, song, myService);
-        setContentView(gameView);
-        //serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
-        //bindService();
-        /*
-        while(myService==null){
+        serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
+        int i=0;
+        while(i<10 && !isServiceBound) {
+            i++;
+            bindService();
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        */
-
-
-
+        if(i==10 && !isServiceBound){
+            unbindService();
+            finish();}
 
     }
+
+
 
     @Override
     protected void onPause() {
@@ -77,9 +76,18 @@ public class GameActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        unbindService();
+        Log.d("GameActivity", "GA on destroy");
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
-        //gameView.resume();
+        if(gameView != null) {
+            gameView.resume();
+        }
     }
 
     public String loadJSONFromAsset(Context context) {
@@ -115,6 +123,7 @@ public class GameActivity extends AppCompatActivity {
                     isServiceBound=true;
                     play();
 
+
                 }
 
                 @Override
@@ -142,9 +151,9 @@ public class GameActivity extends AppCompatActivity {
             Log.d("ACTIVITY SetBluetooth", "Not NULL");
             if(song != null)
             {
-                //gameView = new GameView(this, point.x, point.y, song, myService);
-                //setContentView(gameView);
-                //gameView.run();
+                gameView = new GameView(this, point.x, point.y, song, myService);
+                setContentView(gameView);
+                gameView.beginGame();
             }
         }
         else

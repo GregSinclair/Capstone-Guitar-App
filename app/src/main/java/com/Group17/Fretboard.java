@@ -34,10 +34,8 @@ public class Fretboard {
     private Beat currentBeat;
     private int beatIndexCounter;
     private JSONObject lastFeedback = null;
+    public JSONObject feedback = null;
     private String nextMessage;
-
-    private BluetoothService myService;
-    private boolean isServiceBound=false;
 
     private static final String TAG = "Fretboard";
 
@@ -45,12 +43,8 @@ public class Fretboard {
 
     private int duration;
 
-    public Fretboard(Resources res, int screenX, int screenY, JSONArray jsonSong, int fretsOnScreen, int spacing, int tempo, int sleeptime, int trackerX, BluetoothService myService) {
-
-        this.myService = myService;
-
+    public Fretboard(Resources res, int screenX, int screenY, JSONArray jsonSong, int fretsOnScreen, int spacing, int tempo, int sleeptime, int trackerX) {
         duration = tempo; //figure out the actual conversion later
-
         beatIndexCounter = 0;
         song = jsonSong;
         xsize = screenX;
@@ -154,12 +148,12 @@ public class Fretboard {
             spaceInterval++;
         }
     }
-
+    /*
     private boolean getFeedback(){
 
         //move this into gameview update and have it pass in the message to a global variable
         try {
-            JSONObject feedback = new JSONObject(myService.getMessage());
+            //JSONObject feedback = new JSONObject(myService.getMessage());
             if(lastFeedback.getInt("sequence")!=feedback.getInt("sequence")){ //tempted to force it to check if its +1 of last time, but that could lead to one sequence error fucking everything up
                 lastFeedback = feedback;
                 return true;
@@ -172,6 +166,17 @@ public class Fretboard {
             e.printStackTrace();
         }
         return false;
+    }
+     */
+
+    public void setFeedback(JSONObject newFeedback) {
+        try {
+            if(newFeedback.getInt("sequence") > lastFeedback.getInt("sequence")) { //note that this means some can be skipped. might be troubling. look into possible setups for this later
+                lastFeedback = newFeedback;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void checkFeedback(int i){
@@ -227,7 +232,6 @@ public class Fretboard {
             Beat fret = frets.next();
 
             if(fret.isSent() && !fret.gottenFeedback()){ //case where we are looking for the response
-                getFeedback(); //was originally going to have this return a boolean, but that's useless if this calls multiple times in a loop
                 checkFeedback(i);
                 //looks like the sprite is redrawn in CF, is this all there is?
             }
@@ -253,7 +257,7 @@ public class Fretboard {
                 }
                 Log.d("Fretboard", messageJSON.toString());
                 nextMessage = messageJSON.toString();
-                myService.sendMessage(nextMessage); //not totally sure about this one
+                //myService.sendMessage(nextMessage); //not totally sure about this one
 
             }
 
@@ -272,10 +276,6 @@ public class Fretboard {
 
     public String getNextMessage() {
         return nextMessage;
-    }
-
-    public void setFeedback(JSONObject feedback){
-        lastFeedback = feedback;
     }
 
 }

@@ -16,6 +16,9 @@ public class Beat {
     Bitmap beatSprite;
 
     private boolean sentBeat;
+
+    private int[] feedback; //use this so that the Beat array can be used to reconstruct the song afterwards and give feedback
+
     boolean feedbackApplied = false;
     Resources res; //dumb implementation, temporary
 
@@ -39,7 +42,7 @@ public class Beat {
     public void applyFeedback(int[] feedback) { //6 bits
         if (!feedbackApplied) {
             feedbackApplied = true;
-
+            this.feedback = feedback;
             beatSprite = BitmapFactory.decodeResource(res, R.drawable.fret);
             beatSprite = Bitmap.createScaledBitmap(beatSprite, width, height, false);
             for (int i = 0; i < 6; i++) {
