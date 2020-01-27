@@ -56,7 +56,7 @@ public class GameView extends SurfaceView implements Runnable {
     public GameView(Context context) {
         super(context);
     }
-    public GameView(GameActivity activity, int screenX, int screenY, JSONArray song, BluetoothService myService) {
+    public GameView(GameActivity activity, int screenX, int screenY, JSONArray song, BluetoothService myService, String songName) {
         super(activity);
 
         this.activity = activity;
@@ -101,7 +101,7 @@ public class GameView extends SurfaceView implements Runnable {
         tracker = new TriggerVisual(getResources(), screenX/fretsOnScreen, screenY);
         tracker.x = (int) (screenX * 0.2);
 
-        fretboard = new Fretboard(getResources(), screenX, (int) (screenY * 0.8), song, fretsOnScreen, spacing, tempo, sleeptime, tracker.x);
+        fretboard = new Fretboard(getResources(), screenX, (int) (screenY * 0.8), song, fretsOnScreen, spacing, tempo, sleeptime, tracker.x, songName);
     }
 
     @Override

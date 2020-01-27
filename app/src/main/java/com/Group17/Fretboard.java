@@ -36,6 +36,7 @@ public class Fretboard {
     private JSONObject lastFeedback = null;
     public JSONObject feedback = null;
     private String nextMessage;
+    private String songName;
 
     private static final String TAG = "Fretboard";
 
@@ -43,7 +44,7 @@ public class Fretboard {
 
     private int duration;
 
-    public Fretboard(Resources res, int screenX, int screenY, JSONArray jsonSong, int fretsOnScreen, int spacing, int tempo, int sleeptime, int trackerX) {
+    public Fretboard(Resources res, int screenX, int screenY, JSONArray jsonSong, int fretsOnScreen, int spacing, int tempo, int sleeptime, int trackerX, String songName) {
         duration = tempo; //figure out the actual conversion later
         beatIndexCounter = 0;
         song = jsonSong;
@@ -62,7 +63,7 @@ public class Fretboard {
         beatHeight = screenY;
         speed = (int)( (tempo * beatWidth * (spacing + 1) * sleeptime) / 60000.0 );
         beatTreadmill = new ArrayList<>();
-
+        this.songName = songName;
         for(int i=0; i<fretsOnScreen+1; i++)
         {
             if( i == fretsOnScreen)
@@ -228,9 +229,10 @@ public class Fretboard {
 
         Iterator<Beat> frets = beatTreadmill.iterator();
         int i = 0;
+        Beat fret=null;
         while (frets.hasNext()) {
-            Beat fret = frets.next();
 
+            fret = frets.next();
             if(fret.isSent() && !fret.gottenFeedback()){ //case where we are looking for the response
                 checkFeedback(i);
                 //looks like the sprite is redrawn in CF, is this all there is?
@@ -263,8 +265,26 @@ public class Fretboard {
 
             i++;
         }
-        //Canvas comboImage = new Canvas(fretboard);
-        //comboImage.drawBitmap(bird, hitbox, 0, null);
+
+        //this is such a stupid place to do the song end wrapup, I should set a flag and move all this to view or activity instead
+        if (fret != null && fret.gottenFeedback()) { //this is the final fret, implying the song is finished
+            int result=0;
+            Iterator<Beat> fretsFinal = beatTreadmill.iterator();
+            while (fretsFinal.hasNext()) {
+                fret = frets.next();
+                result += fret.viewFeedback();
+            }
+            result = (int)((result*100.00)/(6*beatTreadmill.size()));
+            JSONObject json = new JSONObject();
+            try {
+                json.put(songName,result);
+                MemoryInterface.writeFile(json);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            //write the results to file
+            Log.d(TAG, "Fretboard: score is "+result);
+        }
 
 
         Bitmap croppedFretboard = Bitmap.createBitmap(fretboard, posX, 0, beatWidth * fretsOnScreen, fretboard.getHeight());

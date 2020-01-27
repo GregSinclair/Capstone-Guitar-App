@@ -21,8 +21,6 @@ public class ConnectedThread extends Thread {
 
     private static final String TAG = "ConnectedThread";
 
-
-
     public ConnectedThread(BluetoothSocket socket) {
         Log.d(TAG, "Create");
         mmSocket = socket;
@@ -40,6 +38,8 @@ public class ConnectedThread extends Thread {
         mmInStream = tmpIn;
         mmOutStream = tmpOut;
 
+
+
         KeepingAlive ohOhOhOh = new KeepingAlive(mmSocket, mmInStream, mmOutStream);
         ohOhOhOh.start();
 
@@ -54,11 +54,14 @@ public class ConnectedThread extends Thread {
 
         String message="";
 
-        while (true) {
+        while (true) { //ok so on the first run it finds no message and never gets past the first try
             Log.d(TAG, "Connected Thread: Looping");
             try {
                 // Read from the InputStream
-                bytes = mmInStream.read(buffer);
+                bytes=0;
+                while (bytes==0) {
+                    bytes = mmInStream.read(buffer);
+                }
                 String oneChar= new String(buffer);
                 Log.d(TAG, "Connected Thread: got character: "+oneChar);
                 if(oneChar.contains("*")){
@@ -120,10 +123,34 @@ public class ConnectedThread extends Thread {
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
         private boolean running = true;
+        private final byte[] KABytes;
+
         public KeepingAlive(BluetoothSocket socket, InputStream input, OutputStream output){
             mmSocket=socket;
             mmInStream=input;
             mmOutStream=output;
+
+            JSONObject keepAlive = new JSONObject();
+            try {
+                JSONArray beat = new JSONArray();
+                beat.put(-2);
+                beat.put(-2);
+                beat.put(-2);
+                beat.put(-2);
+                beat.put(-2);
+                beat.put(-2);
+                keepAlive.put("type", 1);
+                keepAlive.put("sequence", 0);
+                keepAlive.put("timeStamp", 0);
+                keepAlive.put("values", beat);
+                keepAlive.put("duration", 500);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            KABytes = keepAlive.toString().getBytes(); //verify that this works, might need to choose utf8 or something
+
+
         }
         public void run() {
             while (running) {
@@ -137,31 +164,15 @@ public class ConnectedThread extends Thread {
         }
         public void terminate(){ //really ought to call this somewhere
             running = false;
-        }
+        } //this needs to get called when the connection is lost, otherwise there are weird errors due to multiple instances of this running
+
         private void write(){
             Log.d(TAG, "Oh Oh Oh Oh STAYIN ALIVE");
-            JSONObject json = new JSONObject();
-            try {
-                JSONArray beat = new JSONArray();
-                beat.put(0);
-                beat.put(0);
-                beat.put(2);
-                beat.put(2);
-                beat.put(2);
-                beat.put(0);
-                json.put("type", 2);
-                json.put("sequence", 0);
-                json.put("timeStamp", 0);
-                json.put("values", beat);
-                json.put("duration", 500);
-            } catch (JSONException e) {
-            e.printStackTrace();
-            }
 
-            byte[] bytes = json.toString().getBytes(); //verify that this works, might need to choose utf8 or something
             try {
-                mmOutStream.write(bytes);
-            } catch (IOException e) { Log.d(TAG, "KeepingAlive Thread: Write Error"); }
+                mmOutStream.write(KABytes);
+            } catch (IOException e) { Log.d(TAG, "KeepingAlive Thread: Write Error" + e.getMessage()); }
         }
     }
 }
+

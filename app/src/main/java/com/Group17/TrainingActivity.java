@@ -33,6 +33,9 @@ public class TrainingActivity extends AppCompatActivity {
     private ServiceConnection serviceConnection;
     private  Intent serviceIntent;
 
+    private JSONArray song = null;
+    private Point point;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,9 +57,9 @@ public class TrainingActivity extends AppCompatActivity {
         }
 
 
-        Point point = new Point();
+        point = new Point();
         getWindowManager().getDefaultDisplay().getSize(point);
-        JSONArray song = null;
+
         try {
             String jtxt = loadJSONFromAsset(this);
             JSONObject json = new JSONObject(jtxt);
@@ -65,14 +68,20 @@ public class TrainingActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        if(song != null)
-        {
+        serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
+        int i=0;
+        while(i<10 && !isServiceBound) {
+            i++;
+            bindService();
             try {
-                trainView = new TrainingView(this, point.x, point.y, song, myService);
-            } catch (JSONException e) {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            setContentView(trainView);
+        }
+        if(i==10 && !isServiceBound){
+            unbindService();
+            finish();
         }
 
     }
@@ -120,6 +129,18 @@ public class TrainingActivity extends AppCompatActivity {
                     BluetoothService.BluetoothServiceBinder myServiceBinder=(BluetoothService.BluetoothServiceBinder)iBinder;
                     myService=myServiceBinder.getService();
                     isServiceBound=true;
+
+                    if(song != null)
+                    {
+                        try {
+                            trainView = new TrainingView(TrainingActivity.this, point.x, point.y, song, myService);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        setContentView(trainView);
+                    }
+
+
                 }
 
                 @Override

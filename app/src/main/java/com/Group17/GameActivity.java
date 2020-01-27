@@ -29,12 +29,13 @@ public class GameActivity extends AppCompatActivity {
     private JSONArray song;
     private Point point;
     private GameActivity context;
+    private String songName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
-        String songName = intent.getStringExtra("songName");
+        songName = intent.getStringExtra("songName");
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -63,7 +64,8 @@ public class GameActivity extends AppCompatActivity {
         }
         if(i==10 && !isServiceBound){
             unbindService();
-            finish();}
+            finish();
+        }
 
     }
 
@@ -151,7 +153,7 @@ public class GameActivity extends AppCompatActivity {
             Log.d("ACTIVITY SetBluetooth", "Not NULL");
             if(song != null)
             {
-                gameView = new GameView(this, point.x, point.y, song, myService);
+                gameView = new GameView(this, point.x, point.y, song, myService, songName);
                 setContentView(gameView);
                 gameView.beginGame();
             }

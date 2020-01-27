@@ -17,6 +17,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Set;
 
 
@@ -61,9 +66,25 @@ public class BluetoothConnection extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(isServiceBound && myService != null && myService.isRunning()){
-                    bluetooth_message = "{'type':'button1 pressed'}*";
-                    myService.sendMessage(bluetooth_message);
-                    return;
+                    JSONObject json = new JSONObject();
+                    try {
+                        JSONArray beat = new JSONArray();
+                        beat.put(0);
+                        beat.put(0);
+                        beat.put(2);
+                        beat.put(2);
+                        beat.put(2);
+                        beat.put(0);
+                        json.put("type", 2);
+                        json.put("sequence", 0);
+                        json.put("timeStamp", 0);
+                        json.put("values", beat);
+                        json.put("duration", 4000);
+                        myService.sendMessage(json.toString());
+                        return;
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
                 else{
                     Toast.makeText(getApplicationContext(),"No connection",Toast.LENGTH_SHORT).show();

@@ -19,7 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 
 
-public class MemoryInterface {
+public class MemoryInterface { //all currently untested
 
     private final static String fileName = "userData.txt";
     final static String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/guitargame/readwrite/" ;

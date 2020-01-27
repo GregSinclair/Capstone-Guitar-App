@@ -32,6 +32,7 @@ public class Beat {
         beatSprite = BitmapFactory.decodeResource(res, R.drawable.fret);
         beatSprite = Bitmap.createScaledBitmap(beatSprite, width, height, false);
         notes = frets;
+        //throw the arrow in here based on some algorithm
         for (int i = 0; i < 6; i++) {
             if (notes[i] != null && notes[i].getNote() != null) {
                 updateBitmap(i, notes[i].getNote());
@@ -115,6 +116,14 @@ public class Beat {
 
     public boolean gottenFeedback(){
         return feedbackApplied;
+    }
+
+    public int viewFeedback(){ //this assumes boolean feedback, will have to rework it once we have nuanced feedback
+        int result =0;
+        for(int i=0;i<6;i++){
+            result+=feedback[i];
+        }
+        return result;
     }
 
     public void resetFeedbackCheck(){
