@@ -120,7 +120,9 @@ public class GameView extends SurfaceView implements Runnable {
     private void update () {
 
         try {
-            fretboard.setFeedback(new JSONObject(myService.getMessage()));
+            String feedback = myService.getMessage();
+            if(feedback.length()>1)
+            fretboard.setFeedback(new JSONObject(feedback));
         } catch (JSONException e) {
             e.printStackTrace();
         }

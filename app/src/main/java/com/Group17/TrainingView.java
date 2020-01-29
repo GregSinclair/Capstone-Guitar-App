@@ -213,19 +213,21 @@ public class TrainingView extends SurfaceView implements Runnable {
 
         if(isServiceBound && myService != null && myService.isRunning()){
             String stringMessage = myService.getMessage();
-            try {
-                JSONObject jsonMessage = new JSONObject(stringMessage);
-                //need to configure this on the RPI end to only send stuff at times that make sense, can't just overwrite the successful ones immediately.
-                //have it do the usual OR thing, and then clear if it detects more than a second of silence?
-                int[] values = new int[6];
-                JSONArray jValues = jsonMessage.getJSONArray("values");
-                for(int i=0;i<6;i++){
-                    values[i]=jValues.getInt(i);
+            if (stringMessage.length()>0) {
+                try {
+                    JSONObject jsonMessage = new JSONObject(stringMessage);
+                    //need to configure this on the RPI end to only send stuff at times that make sense, can't just overwrite the successful ones immediately.
+                    //have it do the usual OR thing, and then clear if it detects more than a second of silence?
+                    int[] values = new int[6];
+                    JSONArray jValues = jsonMessage.getJSONArray("values");
+                    for (int i = 0; i < 6; i++) {
+                        values[i] = jValues.getInt(i);
+                    }
+                    trainingBeat.applyFeedback(values);
+                    trainingBeat.resetFeedbackCheck();
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-                trainingBeat.applyFeedback(values);
-                trainingBeat.resetFeedbackCheck();
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
         }
     }
