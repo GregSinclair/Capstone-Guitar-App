@@ -52,21 +52,28 @@ public class GameActivity extends AppCompatActivity {
         }
 
         serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
+        bindService();
+        /*
         int i=0;
-        while(i<10 && !isServiceBound) {
+        while(i<100 && !isServiceBound) {
             i++;
             bindService();
             try {
-                Thread.sleep(1000);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        if(i==10 && !isServiceBound){
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        if(i==100 && !isServiceBound){
             unbindService();
             finish();
         }
-
+        */
     }
 
 

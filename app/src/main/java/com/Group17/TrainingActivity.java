@@ -69,20 +69,8 @@ public class TrainingActivity extends AppCompatActivity {
         }
 
         serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
-        int i=0;
-        while(i<10 && !isServiceBound) {
-            i++;
-            bindService();
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        if(i==10 && !isServiceBound){
-            unbindService();
-            finish();
-        }
+        bindService();
+
 
     }
 

@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.util.Log;
 
 public class Beat {
 
@@ -41,11 +42,12 @@ public class Beat {
     }
 
     public void applyFeedback(int[] feedback) { //6 bits
-        if (!feedbackApplied) {
+        if (!feedbackApplied && feedback!=null) {
             feedbackApplied = true;
             this.feedback = feedback;
             beatSprite = BitmapFactory.decodeResource(res, R.drawable.fret);
             beatSprite = Bitmap.createScaledBitmap(beatSprite, width, height, false);
+            Log.d("Beat", "feedback is " + feedback[0] + feedback[1]);
             for (int i = 0; i < 6; i++) {
                 if (notes[i] != null && notes[i].getNote() != null) {
                     if (feedback[i] != 1) { //1 for good, other numbers will eventually be reserved for different feedback

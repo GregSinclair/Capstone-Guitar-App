@@ -45,7 +45,7 @@ public class GameView extends SurfaceView implements Runnable {
     private final int sleeptime = 50;
     private TriggerVisual tracker;
     private Fretboard fretboard;
-
+    private String sentMessage = "";
 
     private BluetoothService myService;
     private boolean isServiceBound=false;
@@ -142,7 +142,12 @@ public class GameView extends SurfaceView implements Runnable {
             canvas.drawBitmap(fretboard.getNextFrame(), 0, (int) (screenY*0.1), paint);
             canvas.drawBitmap(tracker.getBitmap(), tracker.x, tracker.y, paint);
 
-
+            String newMessage = fretboard.getNextMessage();
+            if(newMessage != sentMessage)
+            {
+                sentMessage = newMessage;
+                myService.sendMessage(newMessage);
+            }
 
             if (isGameOver) {
                 isPlaying = false;

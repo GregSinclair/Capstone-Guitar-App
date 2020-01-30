@@ -55,7 +55,7 @@ public class ConnectedThread extends Thread {
         String message="";
 
         while (true) { //ok so on the first run it finds no message and never gets past the first try
-            Log.d(TAG, "Connected Thread: Looping");
+            //Log.d(TAG, "Connected Thread: Looping");
             try {
                 // Read from the InputStream
                 bytes=0;
@@ -63,7 +63,7 @@ public class ConnectedThread extends Thread {
                     bytes = mmInStream.read(buffer);
                 }
                 String oneChar= new String(buffer);
-                Log.d(TAG, "Connected Thread: got character: "+oneChar);
+                //Log.d(TAG, "Connected Thread: got character: "+oneChar);
                 if(oneChar.contains("*")){
                     Log.d(TAG, "Connected Thread: message recieved: "+message);
                     lastMessage=message;
@@ -76,7 +76,7 @@ public class ConnectedThread extends Thread {
                 // Send the obtained bytes to the UI activity
                 //mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
 
-                Log.d(TAG, "Connected Thread: Sent Read");
+                //Log.d(TAG, "Connected Thread: Sent Read");
             } catch (IOException e) {
                 Log.d(TAG, "Connected Thread: Loop Escape");
                 break;
@@ -86,14 +86,14 @@ public class ConnectedThread extends Thread {
 
     /* Call this from the main activity to send data to the remote device */
     public void write(byte[] bytes) {
-        Log.d(TAG, "Connect Thread: Write");
+        //Log.d(TAG, "Connect Thread: Write");
         try {
             mmOutStream.write(bytes);
         } catch (IOException e) { Log.d(TAG, "Connected Thread: Write Error"); }
     }
 
     public void write(String newMessage){
-        Log.d(TAG, "Connect Thread: WriteString");
+        //Log.d(TAG, "Connect Thread: WriteString");
         Log.d(TAG, newMessage);
         byte[] bytes = newMessage.getBytes(); //verify that this works, might need to choose utf8 or something
         try {
@@ -167,7 +167,7 @@ public class ConnectedThread extends Thread {
         } //this needs to get called when the connection is lost, otherwise there are weird errors due to multiple instances of this running
 
         private void write(){
-            Log.d(TAG, "Oh Oh Oh Oh STAYIN ALIVE");
+            //Log.d(TAG, "Oh Oh Oh Oh STAYIN ALIVE");
 
             try {
                 mmOutStream.write(KABytes);

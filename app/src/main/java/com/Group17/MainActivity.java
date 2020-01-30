@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     //BluetoothConnectionService mBluetoothConnection;
     ConnectedThread mBluetoothConnection = null;
 
-    private String theSong;
+    private String theSong = "Fun";
 
     private static final String TAG = "MainActivity";
 
@@ -47,13 +47,6 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                if(mBluetoothConnection==null) {
-                    Log.d(TAG, "no bluetooth connection");
-
-                    Toast.makeText(getApplicationContext(), "No bluetooth connection", Toast.LENGTH_LONG).show();
-                    //return;
-                }
 
                 Intent intent = new Intent(MainActivity.this, GameActivity.class);
                 if(theSong==null){

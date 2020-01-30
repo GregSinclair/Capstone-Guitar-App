@@ -33,7 +33,7 @@ public class Fretboard {
     private int trackerX;
     private Beat currentBeat;
     private int beatIndexCounter;
-    private JSONObject lastFeedback = null;
+    private JSONObject lastFeedback;
     public JSONObject feedback = null;
     private String nextMessage;
     private String songName;
@@ -45,7 +45,7 @@ public class Fretboard {
     private int duration;
 
     public Fretboard(Resources res, int screenX, int screenY, JSONArray jsonSong, int fretsOnScreen, int spacing, int tempo, int sleeptime, int trackerX, String songName) {
-        duration = tempo; //figure out the actual conversion later
+        duration = 1500; //figure out the actual conversion later
         beatIndexCounter = 0;
         song = jsonSong;
         xsize = screenX;
@@ -75,7 +75,16 @@ public class Fretboard {
         }
         fretboard = Bitmap.createBitmap(beatWidth*(fretsOnScreen+1), beatHeight, Bitmap.Config.ARGB_8888);
         initImage();
-
+        lastFeedback = new JSONObject();
+        try {
+            lastFeedback.put("sequence",0);
+            lastFeedback.put("type",3);
+            lastFeedback.put("timeStamp",0);
+            lastFeedback.put("values",new int[6]);
+            lastFeedback.put("duration",0);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private Beat createEmptyBeat()
@@ -174,6 +183,7 @@ public class Fretboard {
         try {
             if(newFeedback.getInt("sequence") > lastFeedback.getInt("sequence")) { //note that this means some can be skipped. might be troubling. look into possible setups for this later
                 lastFeedback = newFeedback;
+                Log.d("Fretboard", "feedback updated");
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -192,8 +202,10 @@ public class Fretboard {
         }
         int[] feedback = new int[6];//there is a duplicate call check in the applyFeedback method, though it would make more sense here
         try {
-            JSONArray jFeedback = lastFeedback.getJSONArray("values");
-
+            //JSONArray jFeedback = lastFeedback.getJSONArray("values");
+            String sFeedback = lastFeedback.getString("values"); //whole thing is being fucky rn
+            Log.d("Fretboard", "feedback is " + sFeedback);
+            /*
             for(int j=0;j<6;j++){
                 try {
                     feedback[j]=jFeedback.getInt(j);
@@ -201,9 +213,13 @@ public class Fretboard {
                     e.printStackTrace();
                 }
             }
+
+             */
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        Log.d("Fretboard", "feedback is " + feedback[0] + feedback[1]+feedback[2] + feedback[3]+feedback[4] + feedback[5]);
+
         Beat fret = beatTreadmill.get(i);
         fret.applyFeedback(feedback);
         Canvas comboImage = new Canvas(fretboard);
@@ -230,7 +246,7 @@ public class Fretboard {
         Iterator<Beat> frets = beatTreadmill.iterator();
         int i = 0;
         Beat fret=null;
-        while (frets.hasNext()) {
+        while (frets.hasNext()) { //ok so frets is not every note. that explains a lot
 
             fret = frets.next();
             if(fret.isSent() && !fret.gottenFeedback()){ //case where we are looking for the response
