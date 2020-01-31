@@ -36,7 +36,7 @@ public class Beat {
         //throw the arrow in here based on some algorithm
         for (int i = 0; i < 6; i++) {
             if (notes[i] != null && notes[i].getNote() != null) {
-                updateBitmap(i, notes[i].getNote());
+                updateBitmap(5-i, notes[i].getNote());
             }
         }
     }
@@ -51,9 +51,9 @@ public class Beat {
             for (int i = 0; i < 6; i++) {
                 if (notes[i] != null && notes[i].getNote() != null) {
                     if (feedback[i] != 1) { //1 for good, other numbers will eventually be reserved for different feedback
-                        updateBitmap(i, notes[i].getNote());
+                        updateBitmap(5-i, notes[i].getNote());
                     } else {
-                        updateBitmap(i, notes[i].getFadedNote());
+                        updateBitmap(5-i, notes[i].getFadedNote());
                     }
                 }
             }

@@ -62,19 +62,21 @@ public class Fretboard {
         beatWidth = screenX/fretsOnScreen;
         beatHeight = screenY;
         speed = (int)( (tempo * beatWidth * (spacing + 1) * sleeptime) / 60000.0 );
-        beatTreadmill = new ArrayList<>();
+        beatTreadmill = new ArrayList<>(); //jan 30: gonna rework beatTreadmill to hang onto the whole song now
+
+
         this.songName = songName;
-        for(int i=0; i<fretsOnScreen+1; i++)
+
+        for(int i=0; i<fretsOnScreen; i++) //fill up the screen with empty beats
         {
-            if( i == fretsOnScreen)
-            {
-                beatTreadmill.add(createEmptyBeat());
-                getNextBeat();
-            }
-            else{ beatTreadmill.add(createEmptyBeat()); }
+            beatTreadmill.add(createEmptyBeat(i));
         }
+
+        loadBeatTreadmill(fretsOnScreen);
+
         fretboard = Bitmap.createBitmap(beatWidth*(fretsOnScreen+1), beatHeight, Bitmap.Config.ARGB_8888);
-        initImage();
+        drawFullImage();
+        //initImage();
         lastFeedback = new JSONObject();
         try {
             lastFeedback.put("sequence",0);
@@ -87,7 +89,38 @@ public class Fretboard {
         }
     }
 
-    private Beat createEmptyBeat()
+    private void loadBeatTreadmill(int a) { //loads up the entire song at start
+        spaceInterval = 0;
+        int b = 0;
+        try {
+
+            while (b < song.length()) {
+                JSONArray beat = song.getJSONArray(b);
+
+                if (spaceInterval >= spacing) {
+                    Note[] notes = new Note[6];
+                    notes[0] = new Note(res, beat.getInt(0), screenX, screenY);
+                    notes[1] = new Note(res, beat.getInt(1), screenX, screenY);
+                    notes[2] = new Note(res, beat.getInt(2), screenX, screenY);
+                    notes[3] = new Note(res, beat.getInt(3), screenX, screenY);
+                    notes[4] = new Note(res, beat.getInt(4), screenX, screenY);
+                    notes[5] = new Note(res, beat.getInt(5), screenX, screenY);
+                    beatTreadmill.add(new Beat(res, notes, beatWidth, beatHeight, a));
+                    b++;
+                    spaceInterval = 0;
+                } else {
+                    beatTreadmill.add(createEmptyBeat(a));
+                    spaceInterval++;
+                }
+                a++; //removed the case where it infinitely sends a note
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Beat createEmptyBeat(int b)
     {
         //Creates a beat with nothing in it
         Note[] emptyNotes = new Note[6];
@@ -95,13 +128,13 @@ public class Fretboard {
         {
             emptyNotes[i] = new Note(res, -2, screenX, screenY);
         }
-        return new Beat(res, emptyNotes, beatWidth, beatHeight, beatIndexCounter++);
+        return new Beat(res, emptyNotes, beatWidth, beatHeight, b);
     }
 
     private void initImage()
     {
         //Creates main image for fretboard
-        //ie. concatinates beats together
+        //ie. concatenates beats together
         Iterator<Beat> frets = beatTreadmill.iterator();
         Canvas comboImage = new Canvas(fretboard);
         int i = 0;
@@ -112,6 +145,33 @@ public class Fretboard {
             i++;
         }
     }
+
+    private void drawFullImage(){ //new way to draw the n+1 beats
+
+        Log.d("Fretboard", "beatCounter " + beatCounter);
+        Beat[] drawnBeats = new Beat[fretsOnScreen+1];
+        Iterator<Beat> frets = beatTreadmill.iterator();
+        int i = 0;
+        while (frets.hasNext() && i<beatCounter) {
+            Beat fret = frets.next();
+            i++;
+        }
+        int j=0;
+        while (frets.hasNext() && j<fretsOnScreen+1) {
+            Beat fret = frets.next();
+            fret.setPosition(j * beatWidth); //they need to know their position for collision purposes
+            drawnBeats[j] = fret;
+            j++;
+        }
+        //now the n+1 beats are selected, draw them
+        Canvas comboImage = new Canvas(fretboard);
+        for(int m=0;m<fretsOnScreen+1;m++){
+            comboImage.drawBitmap(drawnBeats[m].getBeat(), m*beatWidth, 0, null);
+        }
+        //this is the full image, gets scrolled along the screen
+
+    }
+
 
     private void setImage()
     {
@@ -128,6 +188,7 @@ public class Fretboard {
         comboImage.drawBitmap(croppedFretboard, 0, 0, null);
         comboImage.drawBitmap(fret.getBeat(), beatWidth * fretsOnScreen, 0, null);
     }
+/*
 
     private void getNextBeat()
     {
@@ -145,7 +206,7 @@ public class Fretboard {
                 notes[3] = new Note(res, beat.getInt(3), screenX, screenY);
                 notes[4] = new Note(res, beat.getInt(4), screenX, screenY);
                 notes[5] = new Note(res, beat.getInt(5), screenX, screenY);
-                beatTreadmill.remove(0);
+                //beatTreadmill.remove(0);
                 beatTreadmill.add(new Beat(res, notes, beatWidth, beatHeight, beatCounter++));
             } catch (JSONException e) {e.printStackTrace();}
 
@@ -153,31 +214,12 @@ public class Fretboard {
         }
         else
         {
-            beatTreadmill.remove(0);
-            beatTreadmill.add(createEmptyBeat());
+            //beatTreadmill.remove(0);
+            beatTreadmill.add(createEmptyBeat(0));
             spaceInterval++;
         }
     }
-    /*
-    private boolean getFeedback(){
-
-        //move this into gameview update and have it pass in the message to a global variable
-        try {
-            //JSONObject feedback = new JSONObject(myService.getMessage());
-            if(lastFeedback.getInt("sequence")!=feedback.getInt("sequence")){ //tempted to force it to check if its +1 of last time, but that could lead to one sequence error fucking everything up
-                lastFeedback = feedback;
-                return true;
-            }
-            else {
-                Log.d(TAG, "Fretboard: sequence error in received message");
-                return false;
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-     */
+*/
 
     public void setFeedback(JSONObject newFeedback) {
         try {
@@ -192,6 +234,10 @@ public class Fretboard {
 
     private void checkFeedback(int i){
 
+        if(i==0){
+            return;
+        }
+
         try {
             int sequence = lastFeedback.getInt("sequence");
             if(sequence != i){
@@ -199,12 +245,29 @@ public class Fretboard {
             }
         } catch (JSONException e) {
             e.printStackTrace();
+            return;
         }
         int[] feedback = new int[6];//there is a duplicate call check in the applyFeedback method, though it would make more sense here
         try {
             //JSONArray jFeedback = lastFeedback.getJSONArray("values");
             String sFeedback = lastFeedback.getString("values"); //whole thing is being fucky rn
-            Log.d("Fretboard", "feedback is " + sFeedback);
+            String[] splitFeedback = sFeedback.split(", ");
+            splitFeedback[0] =""+splitFeedback[0].charAt(1); //if theres a -ve number this causes problems
+            splitFeedback[5] =""+splitFeedback[5].charAt(0);
+            Log.d("Fretboard", "split feedback is " + splitFeedback);
+
+            for(int j=0;j<6;j++){
+                try {
+                    feedback[j] = Integer.parseInt(splitFeedback[j]);
+
+                }
+                catch(NumberFormatException e){
+                    Log.d("Fretboard", "number format exception");
+                    return;
+                }
+            }
+            Log.d("Fretboard", "int feedback is " + feedback);
+
             /*
             for(int j=0;j<6;j++){
                 try {
@@ -218,15 +281,26 @@ public class Fretboard {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.d("Fretboard", "feedback is " + feedback[0] + feedback[1]+feedback[2] + feedback[3]+feedback[4] + feedback[5]);
+        //Log.d("Fretboard", "feedback is " + feedback[0] + feedback[1]+feedback[2] + feedback[3]+feedback[4] + feedback[5]);
 
-        Beat fret = beatTreadmill.get(i);
-        fret.applyFeedback(feedback);
-        Canvas comboImage = new Canvas(fretboard);
-        comboImage.drawBitmap(fret.getBeat(), beatWidth * i, 0, null); //this implementation is still weird to me.
-                                                                                    //the bitmap is larger than the screen? this might be why it runs like ass on my main phone
+        //Beat fret = beatTreadmill.get(i); //gotta use iterator bc of all the useless ones
+        Beat fret;
+        Iterator<Beat> frets = beatTreadmill.iterator();
 
+        while (frets.hasNext()) {
+            fret = frets.next();
+            if(fret.getIndex()==i){
+                fret.applyFeedback(feedback);
+                //Canvas comboImage = new Canvas(fretboard);
+                //comboImage.drawBitmap(fret.getBeat(), beatWidth * i, 0, null);
+
+                drawFullImage();
+                return;
+            }
+        }
     }
+
+
 
     public Bitmap getNextFrame()
     {
@@ -235,9 +309,12 @@ public class Fretboard {
         if(posX >= beatWidth)
         {
             posX = posX - beatWidth;
-            getNextBeat();
-            setImage();
 
+
+            //setImage();
+
+            drawFullImage();
+            beatCounter++;
         }
             //getFeedback(); //disabled until we have proper JSON object passing
 
@@ -246,11 +323,11 @@ public class Fretboard {
         Iterator<Beat> frets = beatTreadmill.iterator();
         int i = 0;
         Beat fret=null;
-        while (frets.hasNext()) { //ok so frets is not every note. that explains a lot
+        while (frets.hasNext()) {
 
             fret = frets.next();
             if(fret.isSent() && !fret.gottenFeedback()){ //case where we are looking for the response
-                checkFeedback(i);
+                checkFeedback(fret.getIndex());
                 //looks like the sprite is redrawn in CF, is this all there is?
             }
 
@@ -263,7 +340,7 @@ public class Fretboard {
                 try
                 {
                     messageJSON.put("type",2);
-                    messageJSON.put("sequence",i);
+                    messageJSON.put("sequence",fret.getIndex());
                     messageJSON.put("timeStamp",0);
                     messageJSON.put("values",mJSONArray);  //there may be some inconsistency here with putting it as an int array vs json array
                                                                 //Using a json array is better. gonna go through and change all to that
@@ -304,8 +381,6 @@ public class Fretboard {
 
 
         Bitmap croppedFretboard = Bitmap.createBitmap(fretboard, posX, 0, beatWidth * fretsOnScreen, fretboard.getHeight());
-        //Canvas comboImage = new Canvas(croppedFretboard);
-        //comboImage.drawBitmap(bird, hitbox, 0, null);
 
         return croppedFretboard;
     }
