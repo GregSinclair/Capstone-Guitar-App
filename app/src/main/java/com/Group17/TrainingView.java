@@ -23,6 +23,7 @@ import android.media.SoundPool;
 
 import android.os.Build;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 
@@ -162,7 +163,8 @@ public class TrainingView extends SurfaceView implements Runnable {
         finger = createScaledBitmap(finger, (int)(neckParts[0].getWidth()*0.5), (int)(neckParts[0].getHeight()*0.15), false);
         for(int i=0;i<6;i++){
             if(beat.getInt(i)>0){
-                updateBitmap((neck.getWidth() - (int)(neckParts[0].getWidth()*0.75) - (neckParts[0].getWidth()*(beat.getInt(i)-lowest))), (int)(neck.getHeight()*(0.025+(i*0.164))), finger); //changed the json while testing, change it back
+                updateBitmap(((int)(neckParts[0].getWidth()*0.25) + (neckParts[0].getWidth()*(beat.getInt(i)-lowest))), (int)(neck.getHeight() - neck.getHeight()*(0.022+((i+1)*0.164))), finger); //figure out why it needs i+1... very weird. probably the 0.22 constant
+                //updateBitmap((neck.getWidth() - (int)(neckParts[0].getWidth()*0.75) - (neckParts[0].getWidth()*(beat.getInt(i)-lowest))), (int)(neck.getHeight()*(0.025+(i*0.164))), finger); //changed the json while testing, change it back
             }
         }
 
@@ -173,7 +175,7 @@ public class TrainingView extends SurfaceView implements Runnable {
             int[] values = {beat.getInt(0),beat.getInt(1),beat.getInt(2),beat.getInt(3),beat.getInt(4),beat.getInt(5)};
             for(int value : values){mJSONArray.put(value);}
             JSONObject json = new JSONObject();
-            json.put("type", 2);
+            json.put("type", 4);
             json.put("sequence", 0);
             json.put("timeStamp", 420);
             json.put("values", mJSONArray);
@@ -218,11 +220,46 @@ public class TrainingView extends SurfaceView implements Runnable {
                     JSONObject jsonMessage = new JSONObject(stringMessage);
                     //need to configure this on the RPI end to only send stuff at times that make sense, can't just overwrite the successful ones immediately.
                     //have it do the usual OR thing, and then clear if it detects more than a second of silence?
-                    int[] values = new int[6];
-                    JSONArray jValues = jsonMessage.getJSONArray("values");
+                    //JSONArray jValues = jsonMessage.getJSONArray("values");
+                    int[] values = new int[6];//there is a duplicate call check in the applyFeedback method, though it would make more sense here
+                    try {
+                        //JSONArray jFeedback = lastFeedback.getJSONArray("values");
+                        String sFeedback = jsonMessage.getString("values"); //whole thing is being fucky rn
+                        String[] splitFeedback = sFeedback.split(", ");
+                        splitFeedback[0] =""+splitFeedback[0].charAt(1); //if theres a -ve number this causes problems
+                        splitFeedback[5] =""+splitFeedback[5].charAt(0);
+                        Log.d("Fretboard", "split feedback is " + splitFeedback);
+
+                        for(int j=0;j<6;j++){
+                            try {
+                                values[j] = Integer.parseInt(splitFeedback[j]);
+
+                            }
+                            catch(NumberFormatException e){
+                                Log.d("Fretboard", "number format exception");
+                                return;
+                            }
+                        }
+                        Log.d("Fretboard", "int feedback is " + values);
+
+            /*
+            for(int j=0;j<6;j++){
+                try {
+                    feedback[j]=jFeedback.getInt(j);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+             */
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    /*
                     for (int i = 0; i < 6; i++) {
                         values[i] = jValues.getInt(i);
                     }
+                     */
                     trainingBeat.applyFeedback(values);
                     trainingBeat.resetFeedbackCheck();
                 } catch (JSONException e) {
@@ -284,11 +321,13 @@ public class TrainingView extends SurfaceView implements Runnable {
     }
 
     public void resume () {
+    }
 
+    public void beginGame()
+    {
         isPlaying = true;
         thread = new Thread(this);
         thread.start();
-
     }
 
     public void pause () {

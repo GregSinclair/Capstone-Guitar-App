@@ -83,7 +83,9 @@ public class TrainingActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        trainView.resume();
+        if(trainView != null) {
+            trainView.resume();
+        }
     }
 
     public String loadJSONFromAsset(Context context) {
@@ -117,18 +119,7 @@ public class TrainingActivity extends AppCompatActivity {
                     BluetoothService.BluetoothServiceBinder myServiceBinder=(BluetoothService.BluetoothServiceBinder)iBinder;
                     myService=myServiceBinder.getService();
                     isServiceBound=true;
-
-                    if(song != null)
-                    {
-                        try {
-                            trainView = new TrainingView(TrainingActivity.this, point.x, point.y, song, myService);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        setContentView(trainView);
-                    }
-
-
+                    play();
                 }
 
                 @Override
@@ -146,6 +137,28 @@ public class TrainingActivity extends AppCompatActivity {
         if(isServiceBound){
             unbindService(serviceConnection);
             isServiceBound=false;
+        }
+    }
+
+    public void play()
+    {
+        if(myService  != null && myService.isRunning() && song != null)
+        {
+            Log.d("ACTIVITY SetBluetooth", "Not NULL");
+            if(song != null)
+            {
+                try {
+                    trainView = new TrainingView(TrainingActivity.this, point.x, point.y, song, myService);
+                    setContentView(trainView);
+                    trainView.beginGame();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        else
+        {
+            Log.d("ACTIVITY SetBluetooth", "NULL");
         }
     }
 

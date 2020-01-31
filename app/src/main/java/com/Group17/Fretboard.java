@@ -293,8 +293,9 @@ public class Fretboard {
                 fret.applyFeedback(feedback);
                 //Canvas comboImage = new Canvas(fretboard);
                 //comboImage.drawBitmap(fret.getBeat(), beatWidth * i, 0, null);
-
+                beatCounter--;
                 drawFullImage();
+                beatCounter++;
                 return;
             }
         }
