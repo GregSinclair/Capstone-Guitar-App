@@ -107,7 +107,7 @@ public class GameView extends SurfaceView implements Runnable {
     @Override
     public void run() {
 
-        while (isPlaying) {
+        while (!fretboard.finished) {
 
             update ();
             draw ();

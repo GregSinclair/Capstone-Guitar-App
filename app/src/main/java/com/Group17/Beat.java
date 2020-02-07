@@ -14,11 +14,13 @@ public class Beat {
     private int width, height;
     private int beatIndex;
     Note[] notes;
-    Bitmap beatSprite;
+    Bitmap beatSprite = null;
+
+    private boolean drawn = false;
 
     private boolean sentBeat;
 
-    private int[] feedback; //use this so that the Beat array can be used to reconstruct the song afterwards and give feedback
+    private int[] feedback = new int[6]; //use this so that the Beat array can be used to reconstruct the song afterwards and give feedback
 
     boolean feedbackApplied = false;
     Resources res; //dumb implementation, temporary
@@ -30,9 +32,13 @@ public class Beat {
         this.res = res;
         beatIndex = index;
         sentBeat = false;
+        notes = frets;
+    }
+
+    private void initSprite(){
         beatSprite = BitmapFactory.decodeResource(res, R.drawable.fret);
         beatSprite = Bitmap.createScaledBitmap(beatSprite, width, height, false);
-        notes = frets;
+
         //throw the arrow in here based on some algorithm
         for (int i = 0; i < 6; i++) {
             if (notes[i] != null && notes[i].getNote() != null) {
@@ -62,7 +68,15 @@ public class Beat {
 
 
     public Bitmap getBeat() {
+        if (!drawn){
+            initSprite();
+            drawn = true;
+        }
         return this.beatSprite;
+    }
+
+    public void releaseBitmap(){
+        beatSprite = null;
     }
 
     public int getWidth() {
@@ -92,6 +106,9 @@ public class Beat {
     }
 
     public boolean isTriggered(int checkX) {
+        if(!drawn){
+            return false;
+        }
         return (xStart < checkX && xStart + this.beatSprite.getWidth() >= checkX);
     }
 
@@ -117,6 +134,9 @@ public class Beat {
     public int getIndex(){return beatIndex;}
 
     public boolean gottenFeedback(){
+        if(beatIndex == 0 || beatIndex == -5){
+            return true;
+        }
         return feedbackApplied;
     }
 

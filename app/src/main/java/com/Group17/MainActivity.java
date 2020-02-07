@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     //BluetoothConnectionService mBluetoothConnection;
     ConnectedThread mBluetoothConnection = null;
 
-    private String theSong = "Fun";
+    private String theSong = "Shorty";
 
     private static final String TAG = "MainActivity";
 
@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 if(data != null) {
                     Log.d(TAG, "intent received");
-                    theSong = data.getParcelableExtra("bluetoothConnection");
+                    theSong = data.getParcelableExtra("song");
                 }
             }
             if (resultCode == RESULT_CANCELED) {
