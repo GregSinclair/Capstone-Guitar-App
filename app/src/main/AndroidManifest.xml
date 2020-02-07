@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -17,6 +18,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".GameActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.noActionBar"/>
+        <activity android:name=".TrainingActivity"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.noActionBar"/>
         <activity
@@ -29,9 +33,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".BluetoothActivity"
+
+        <activity android:name=".SongList"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.noActionBar"/>
+        <activity android:name=".BluetoothConnection"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.noActionBar"/>
+        <service
+            android:name=".BluetoothService">
+            <intent-filter>
+                <action android:name=".BluetoothService .BIND" />
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </service>
     </application>
-
 </manifest>

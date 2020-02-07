@@ -2,18 +2,31 @@ package com.Group17;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.os.Bundle;
+import android.widget.*;
+
+
 
 public class MainActivity extends AppCompatActivity {
+    private BluetoothService myService;
+    private boolean isServiceBound;
+    private ServiceConnection serviceConnection;
+    private  Intent serviceIntent;
 
-    private boolean isMute;
+    //BluetoothConnectionService mBluetoothConnection;
+    ConnectedThread mBluetoothConnection = null;
+
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,9 +37,20 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.title_screen);
 
+
+
+
+
         findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                if(mBluetoothConnection==null) {
+                    Log.d(TAG, "no bluetooth connection");
+
+                    Toast.makeText(getApplicationContext(), "No bluetooth connection", Toast.LENGTH_LONG).show();
+                    //return;
+                }
 
                 Intent intent = new Intent(MainActivity.this, GameActivity.class);
                 intent.putExtra("songName", "Fun");
@@ -38,45 +62,81 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                Intent intent = new Intent(MainActivity.this, BluetoothActivity.class);
+                Intent intent = new Intent(MainActivity.this, SongList.class);
                 //intent.putExtra("songName", "Fun2");
-                startActivity(intent);
+                Intent bluetoothIntent;
+                startActivityForResult(intent,1);
+
+                //mBluetoothConnection = bluetoothIntent.getParcelableExtra("bluetoothConnection");
+
+
             }
         });
-/*
 
-        TextView highScoreTxt = findViewById(R.id.highScoreTxt);
-
-        final SharedPreferences prefs = getSharedPreferences("game", MODE_PRIVATE);
-        highScoreTxt.setText("HighScore: " + prefs.getInt("highscore", 0));
-
-        isMute = prefs.getBoolean("isMute", false);
-
-        final ImageView volumeCtrl = findViewById(R.id.volumeCtrl);
-
-        if (isMute)
-            volumeCtrl.setImageResource(R.drawable.ic_volume_off_black_24dp);
-        else
-            volumeCtrl.setImageResource(R.drawable.ic_volume_up_black_24dp);
-
-        volumeCtrl.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.b_connect).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                isMute = !isMute;
-                if (isMute)
-                    volumeCtrl.setImageResource(R.drawable.ic_volume_off_black_24dp);
-                else
-                    volumeCtrl.setImageResource(R.drawable.ic_volume_up_black_24dp);
+                int myVersion = Build.VERSION.SDK_INT;
+                Log.d(TAG, "Running API version " + myVersion);
 
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putBoolean("isMute", isMute);
-                editor.apply();
+                Intent intent = new Intent(MainActivity.this, BluetoothConnection.class);
 
+                startActivityForResult(intent,1); //tries to get a BTA intent
             }
         });
 
+        serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
 
- */
+        startService(serviceIntent);
+
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "in activity result"); //this doesn't seem to ever trigger
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                if(data != null) {
+                    Log.d(TAG, "intent received");
+                    mBluetoothConnection = data.getParcelableExtra("bluetoothConnection");
+                }
+            }
+            if (resultCode == RESULT_CANCELED) {
+                Log.d(TAG, "no intent received");
+            }
+        }
+    }
+
+
+    private void bindService(){
+        if(serviceConnection==null){
+            serviceConnection=new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                    BluetoothService.BluetoothServiceBinder myServiceBinder=(BluetoothService.BluetoothServiceBinder)iBinder;
+                    myService=myServiceBinder.getService();
+                    isServiceBound=true;
+                }
+
+                @Override
+                public void onServiceDisconnected(ComponentName componentName) {
+                    isServiceBound=false;
+                }
+            };
+        }
+
+        bindService(serviceIntent,serviceConnection, Context.BIND_AUTO_CREATE);
+
+    }
+
+    private void unbindService(){
+        if(isServiceBound){
+            unbindService(serviceConnection);
+            isServiceBound=false;
+        }
+    }
+
 }

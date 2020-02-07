@@ -6,6 +6,9 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.os.Build;
+import android.os.ParcelUuid;
+import android.os.Parcelable;
 import android.util.Log;
 
 import java.io.IOException;
@@ -14,19 +17,26 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.UUID;
 
+import android.os.Parcelable;
+import android.os.Parcel;
+
 /**
  * Created by User on 12/21/2016.
  */
 
-public class BluetoothConnectionService {
+public class BluetoothConnectionService implements Parcelable {
+
+
+
+
     private static final String TAG = "BluetoothConnectionServ";
 
     private static final String appName = "MYAPP";
 
-    private static final UUID MY_UUID_INSECURE =
+    private static UUID MY_UUID_INSECURE =
             UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
 
-    private final BluetoothAdapter mBluetoothAdapter;
+    private BluetoothAdapter mBluetoothAdapter;
     Context mContext;
 
     private AcceptThread mInsecureAcceptThread;
@@ -44,6 +54,31 @@ public class BluetoothConnectionService {
         start();
     }
 
+    public static final Parcelable.Creator<BluetoothConnectionService> CREATOR
+            = new Parcelable.Creator<BluetoothConnectionService>() {
+        public BluetoothConnectionService createFromParcel(Parcel in) {
+            return new BluetoothConnectionService(in);
+        }
+
+        public BluetoothConnectionService[] newArray(int size) {
+            return new BluetoothConnectionService[size];
+        }
+    };
+
+    public int describeContents() {
+        return 0;
+    }
+
+    public void writeToParcel(Parcel out, int flags) {
+
+
+        //out.writeParcelable(this, 0); //this might not be allowed
+    }
+
+    private BluetoothConnectionService(Parcel in) {
+        mBluetoothAdapter = in.readParcelable(BluetoothConnectionService.class.getClassLoader());
+    }
+
 
     /**
      * This thread runs while listening for incoming connections. It behaves
@@ -57,6 +92,7 @@ public class BluetoothConnectionService {
 
         public AcceptThread(){
             BluetoothServerSocket tmp = null;
+
 
             // Create a new listening server socket
             try{
@@ -116,7 +152,7 @@ public class BluetoothConnectionService {
         private BluetoothSocket mmSocket;
 
         public ConnectThread(BluetoothDevice device, UUID uuid) {
-            Log.d(TAG, "ConnectThread: started.");
+            Log.d(TAG, "BlueConnect: started.");
             mmDevice = device;
             deviceUUID = uuid;
         }
@@ -128,11 +164,11 @@ public class BluetoothConnectionService {
             // Get a BluetoothSocket for a connection with the
             // given BluetoothDevice
             try {
-                Log.d(TAG, "ConnectThread: Trying to create InsecureRfcommSocket using UUID: "
-                        +MY_UUID_INSECURE );
+                Log.d(TAG, "BlueConnect: Trying to create InsecureRfcommSocket using UUID: "
+                        +deviceUUID);
                 tmp = mmDevice.createRfcommSocketToServiceRecord(deviceUUID);
             } catch (IOException e) {
-                Log.e(TAG, "ConnectThread: Could not create InsecureRfcommSocket " + e.getMessage());
+                Log.e(TAG, "BlueConnect: Could not create InsecureRfcommSocket " + e.getMessage());
             }
 
             mmSocket = tmp;
@@ -147,7 +183,7 @@ public class BluetoothConnectionService {
                 // successful connection or an exception
                 mmSocket.connect();
 
-                Log.d(TAG, "run: ConnectThread connected.");
+                Log.d(TAG, "run: BlueConnect connected.");
             } catch (IOException e) {
                 // Close the socket
                 try {
@@ -156,7 +192,7 @@ public class BluetoothConnectionService {
                 } catch (IOException e1) {
                     Log.e(TAG, "mConnectThread: run: Unable to close connection in socket " + e1.getMessage());
                 }
-                Log.d(TAG, "run: ConnectThread: Could not connect to UUID: " + MY_UUID_INSECURE );
+                Log.d(TAG, "run: BlueConnect: Could not connect to UUID: " + MY_UUID_INSECURE );
             }
 
             //will talk about this in the 3rd video
@@ -178,8 +214,11 @@ public class BluetoothConnectionService {
      * Start the chat service. Specifically start AcceptThread to begin a
      * session in listening (server) mode. Called by the Activity onResume()
      */
-    public synchronized void start() {
+    public synchronized void start() { //note that this isn't the same Start used below, it's a thread method. This one is called when the BCS object is created
         Log.d(TAG, "start");
+
+
+
 
         // Cancel any thread attempting to make a connection
         if (mConnectThread != null) {
@@ -195,16 +234,34 @@ public class BluetoothConnectionService {
     /**
 
      AcceptThread starts and sits waiting for a connection.
-     Then ConnectThread starts and attempts to make a connection with the other devices AcceptThread.
+     Then BlueConnect starts and attempts to make a connection with the other devices AcceptThread.
      **/
 
     public void startClient(BluetoothDevice device,UUID uuid){
         Log.d(TAG, "startClient: Started.");
 
+        ParcelUuid[] supportedUuids = device.getUuids();
+        if(supportedUuids!=null){
+            MY_UUID_INSECURE = supportedUuids[0].getUuid();
+            Log.d(TAG, "Changed default uuid");
+        }
+
+
         //initprogress dialog
         mProgressDialog = ProgressDialog.show(mContext,"Connecting Bluetooth"
                 ,"Please Wait...",true);
 
+        /*
+        if(supportedUuids!=null){
+            Log.d(TAG, "BCS startClient used supportedUuids");
+            mConnectThread = new BlueConnect(device, (supportedUuids[0]).getUuid());
+        }
+        else {
+            Log.d(TAG, "BCS startClient used default UUID");
+
+        }
+
+         */
         mConnectThread = new ConnectThread(device, uuid);
         mConnectThread.start();
     }
@@ -242,6 +299,9 @@ public class BluetoothConnectionService {
 
             mmInStream = tmpIn;
             mmOutStream = tmpOut;
+            if (tmpIn==null||tmpOut==null){
+                Log.d(TAG, "ConnectedThread: a stream is null");
+            }
         }
 
         public void run(){

@@ -9,28 +9,28 @@ import android.graphics.Rect;
 
 public class Beat {
 
-    public int x, y;
+    private int xStart;
     private int width, height;
-
+    private int beatIndex;
     Note[] notes;
     Bitmap beatSprite;
 
-    private boolean triggerCollide;
+    private boolean sentBeat;
     boolean feedbackApplied = false;
     Resources res; //dumb implementation, temporary
 
-    public Beat(Resources res, Note[] frets, int width, int height){
+    public Beat(Resources res, Note[] frets, int width, int height, int index) {
         this.width = width;
         this.height = height;
-        this.x = 0;
-        this.y = 0;
+        this.xStart = 0;
         this.res = res;
-        triggerCollide = false;
+        beatIndex = index;
+        sentBeat = false;
         beatSprite = BitmapFactory.decodeResource(res, R.drawable.fret);
         beatSprite = Bitmap.createScaledBitmap(beatSprite, width, height, false);
         notes = frets;
-        for(int i=0;i<6;i++){
-            if(notes[i] != null && notes[i].getNote() != null) {
+        for (int i = 0; i < 6; i++) {
+            if (notes[i] != null && notes[i].getNote() != null) {
                 updateBitmap(i, notes[i].getNote());
             }
         }
@@ -44,10 +44,9 @@ public class Beat {
             beatSprite = Bitmap.createScaledBitmap(beatSprite, width, height, false);
             for (int i = 0; i < 6; i++) {
                 if (notes[i] != null && notes[i].getNote() != null) {
-                    if(feedback[i] == 0){
+                    if (feedback[i] != 1) { //1 for good, other numbers will eventually be reserved for different feedback
                         updateBitmap(i, notes[i].getNote());
-                    }
-                    else {
+                    } else {
                         updateBitmap(i, notes[i].getFadedNote());
                     }
                 }
@@ -56,17 +55,25 @@ public class Beat {
     }
 
 
-    public Bitmap getBeat () {return this.beatSprite;}
-    public int getWidth() { return this.beatSprite.getWidth();}
-    public int getHeight() { return this.beatSprite.getHeight();}
+    public Bitmap getBeat() {
+        return this.beatSprite;
+    }
 
-    private void updateBitmap(int position, Bitmap newSprite){ //smashes a new sprite onto the current pile
-        int top = beatSprite.getHeight()*position/6 + (beatSprite.getHeight()/6 - newSprite.getHeight())/2;
-        int left = (beatSprite.getWidth() - newSprite.getWidth())/2;
+    public int getWidth() {
+        return this.beatSprite.getWidth();
+    }
+
+    public int getHeight() {
+        return this.beatSprite.getHeight();
+    }
+
+    private void updateBitmap(int position, Bitmap newSprite) { //smashes a new sprite onto the current pile
+        int top = beatSprite.getHeight() * position / 6 + (beatSprite.getHeight() / 6 - newSprite.getHeight()) / 2;
+        int left = (beatSprite.getWidth() - newSprite.getWidth()) / 2;
         Bitmap result = Bitmap.createBitmap(beatSprite.getWidth(), beatSprite.getHeight(), beatSprite.getConfig());
         Canvas canvas = new Canvas(result);
         canvas.drawBitmap(beatSprite, new Matrix(), null);
-        canvas.drawBitmap(newSprite, left, top,null); //based on the    drawBitmap(Bitmap bitmap, float left, float top, Paint paint)
+        canvas.drawBitmap(newSprite, left, top, null); //based on the    drawBitmap(Bitmap bitmap, float left, float top, Paint paint)
         this.beatSprite = result;
     }
 
@@ -78,9 +85,30 @@ public class Beat {
         return bmOverlay;
     }
 
-    public boolean isTriggered (int checkX) {
-        return (x<checkX && x+this.beatSprite.getWidth() >= checkX );
+    public boolean isTriggered(int checkX) {
+        return (xStart < checkX && xStart + this.beatSprite.getWidth() >= checkX);
     }
+
+    public void setPosition(int x) {
+        this.xStart = x;
+    }
+
+    public boolean isSent() {
+        return sentBeat;
+    }
+    public void sendBeat() {
+        sentBeat = true;
+    }
+    public int[] getNoteArray()
+    {
+        int noteNums[] = new int[6];
+        for(int i = 0; i<6; i++)
+        {
+            noteNums[i] = notes[i].getNoteNum();
+        }
+        return noteNums;
+    }
+    public int getIndex(){return beatIndex;}
 }
 
 
