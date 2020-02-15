@@ -319,7 +319,7 @@ public class Fretboard {
             JSONObject json = new JSONObject();
             try {
                 json.put(songName,result);
-                MemoryInterface.writeFile(json);
+                MemoryInterface.writeFile(json, "scores.txt");
             } catch (JSONException e) {
                 e.printStackTrace();
             }

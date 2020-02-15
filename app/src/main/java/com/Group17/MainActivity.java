@@ -41,9 +41,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.title_screen);
 
 
-
-
-
         findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -59,18 +56,22 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
         findViewById(R.id.button4).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 Intent intent = new Intent(MainActivity.this, SongList.class);
-                //intent.putExtra("songName", "Fun2");
-                Intent bluetoothIntent;
                 startActivityForResult(intent,1);
+            }
+        });
 
-                //mBluetoothConnection = bluetoothIntent.getParcelableExtra("bluetoothConnection");
+        findViewById(R.id.b_settings).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
 
-
+                Intent intent = new Intent(MainActivity.this, SettingsMenu.class);
+                startActivity(intent);
             }
         });
 
