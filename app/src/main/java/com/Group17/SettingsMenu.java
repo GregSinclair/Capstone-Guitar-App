@@ -2,6 +2,7 @@ package com.Group17;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -25,17 +26,32 @@ public class SettingsMenu extends AppCompatActivity {
 
     private static final String TAG = "SongList";
     private final String fileName = "userSettings.txt";
+    private boolean gotPermissions = false;
     ListView settingList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+        //do the permission checks before any of this
+        //pause and wait for the permission thing to resume it
+        if(MemoryInterface.checkReadPermission(this)){
+            if(MemoryInterface.checkWritePermission(this)) {
+                gotPermissions = true; //this stops it from bypassing that check
+            }
+        }
+
+        while(!gotPermissions){} //ideally it wouldnt freeze up if the permissions arent granted, but I should really have this loop terminate after 10s or so
+
         setContentView(R.layout.list_screen);
 
         initSettings();
 
 
         JSONObject json = MemoryInterface.readFile(fileName);
+
+        //does this have to be in the onCreate? Throwing this in a function and recreating the list after a press would be good. Try that after this is stable
 
         List<String> settingNames = new ArrayList<String>();
         Iterator<String> settingIterator = json.keys();
@@ -56,11 +72,13 @@ public class SettingsMenu extends AppCompatActivity {
                 TextView tv = (TextView) view;
                 String tvText = (String)tv.getText();
                 String[] tokens = tvText.split(": ");
-                if(tokens[1] == "off"){ //simple toggle
+                if(tokens[1].equals("off")){ //simple toggle
                     tokens[1] = "on";
+                    Toast.makeText(getApplicationContext(),tokens[0]+ " :" + tokens[1],Toast.LENGTH_SHORT).show();
                 }
                 else{
                     tokens[1] = "off";
+                    Toast.makeText(getApplicationContext(),tokens[0]+ " :" + tokens[1],Toast.LENGTH_SHORT).show();
                 }
                 JSONObject jSettingChange = new JSONObject();
                 try {
@@ -80,6 +98,21 @@ public class SettingsMenu extends AppCompatActivity {
         if(!(MemoryInterface.checkIfFileExists(fileName))){
             resetSettings();
         }
+        //if the settings got fucked up somehow (empty file) it'll be necessary to return the lost settings
+        try {
+            JSONObject original = MemoryInterface.readFile(fileName);
+            JSONObject jSettings = getDefaultSettings();
+            Iterator<String> settingsIterator=jSettings.keys();
+            while(settingsIterator.hasNext()) {
+                String current = settingsIterator.next();
+                if(!original.has(current)){
+                    original.put(current, jSettings.get(current));
+                }
+            }
+            MemoryInterface.writeFile(original, fileName);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void resetScores(){
@@ -87,16 +120,53 @@ public class SettingsMenu extends AppCompatActivity {
         //seems there's some nuance to this, test it once the scores are implemented
     }
 
-    private void resetSettings(){
+    private JSONObject getDefaultSettings(){
         JSONObject jSettings = new JSONObject();
         try {
             jSettings.put("manualTrainingProgression", "off");
             jSettings.put("tempoOverride", "off");
+            jSettings.put("test value 1", "off");
+            jSettings.put("test value 2", "off");
+            jSettings.put("test value 3", "off");
             //add more
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        return jSettings;
+    }
+
+    private void resetSettings(){
+        JSONObject jSettings = getDefaultSettings();
         MemoryInterface.writeFile(jSettings, fileName);
+    }
+
+    @Override //throw this in the game as well
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    MemoryInterface.checkWritePermission(this);
+                } else {
+                    Toast.makeText(getApplicationContext(),"Unable to get permissions: READ",Toast.LENGTH_SHORT).show();
+                    this.finish();
+                }
+                return;
+            }
+            case 2: {
+
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    gotPermissions = true;
+                } else {
+                    Toast.makeText(getApplicationContext(),"Unable to get permissions: WRITE",Toast.LENGTH_SHORT).show();
+                    this.finish();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request.
+        }
     }
 
 }

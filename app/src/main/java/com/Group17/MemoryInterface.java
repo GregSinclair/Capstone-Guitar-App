@@ -1,7 +1,14 @@
 package com.Group17;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,12 +28,15 @@ import java.util.List;
 
 public class MemoryInterface { //all currently untested
 
-    final static String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/guitargame/readwrite/" ;
+    //final static String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/guitargame/readwrite/" ;
+    final static String path = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "guitarGame" ;
     final static String TAG = "Memory Interface";
 
+    private final static int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 1;
+    private final static int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 2;
 
     public static boolean checkIfFileExists(String fileName){
-        File file = new File(path+ fileName);
+        File file = new File(path+ File.separator+ fileName);
         if(file.exists()){
             Log.d(TAG, "file exists");
             return true;
@@ -36,12 +46,11 @@ public class MemoryInterface { //all currently untested
     }
 
     public static JSONObject readFile(String fileName){
-        //this.fileName = fileName;
         JSONObject result=new JSONObject();
         String line=null;
 
         try {
-            FileInputStream fileInputStream = new FileInputStream (new File(path + fileName));
+            FileInputStream fileInputStream = new FileInputStream (new File(path+ File.separator+ fileName));
             InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
             StringBuilder stringBuilder = new StringBuilder();
@@ -73,11 +82,11 @@ public class MemoryInterface { //all currently untested
     public static void writeFile(JSONObject newData, String fileName){
         //selective write, or just pull the whole file, modify parts, and write it back? Mass rewrite seems easier
 
-        if(!(checkIfFileExists(fileName))) {
-            FileWriter fWriter = null;
+        if(!(checkIfFileExists(fileName))) { //calls this twice while initializing, but thats fine
+            FileWriter fWriter = null; //seems like it gets in here even if the file exists
             try {
-                new File(path).mkdirs();
-                File file = new File(path + fileName);
+                new File(path+ File.separator).mkdirs();
+                File file = new File(path +File.separator+ fileName);
                 file.createNewFile();
                 fWriter = new FileWriter(file, false);
                 fWriter.write(newData.toString());
@@ -87,8 +96,9 @@ public class MemoryInterface { //all currently untested
                 e.printStackTrace();
             }
 
+
         }
-        else{
+        else{ //if file does exist
             try {
 
                 JSONObject original = readFile(fileName);
@@ -97,30 +107,30 @@ public class MemoryInterface { //all currently untested
                 List<String> originalNames = new ArrayList<String>();
                 List<String> newNames = new ArrayList<String>();
                 Iterator<String> originalIterator=original.keys();
-                Iterator<String> newIterator=original.keys();
+                Iterator<String> newIterator=newData.keys();
                 while(originalIterator.hasNext()){
-                    keyNames.add(originalIterator.next());
-                    originalNames.add(originalIterator.next());
+                    String current = originalIterator.next();
+                    keyNames.add(current);
+                    originalNames.add(current);
                 }
                 while(newIterator.hasNext()){
-                    keyNames.add(newIterator.next());
-                    newNames.add(newIterator.next());
+                    String current = newIterator.next();
+                    keyNames.add(current);
+                    newNames.add(current);
                 }
                 for(int i=0; i<keyNames.size();i++){
                     String key = keyNames.get(i);
                     if(newNames.contains(key)){
-
-                        result.put(key,newData.getInt(key)); //assuming its always Int values we store, reasonable for now
-
+                        result.put(key,newData.get(key));
                     }
                     else if(originalNames.contains(key)){
-                        result.put(key,original.getInt(key));
+                        result.put(key,original.get(key));
                     }
                 }
 
                 //now overwrite the file
 
-                FileWriter fWriter = new FileWriter(new File(path + fileName), false);
+                FileWriter fWriter = new FileWriter(new File(path+ File.separator+ fileName), false);
                 fWriter.write(result.toString());
                 fWriter.close();
 
@@ -131,4 +141,37 @@ public class MemoryInterface { //all currently untested
             }
         }
     }
+
+    public static boolean checkReadPermission(Activity theActivity){
+
+        if (ContextCompat.checkSelfPermission(theActivity, "android.permission.READ_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
+
+           ActivityCompat.requestPermissions(theActivity, new String[]{"android.permission.READ_EXTERNAL_STORAGE"}, MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+        } else {
+            // Permission has already been granted
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean checkWritePermission(Activity theActivity){
+
+        if (ContextCompat.checkSelfPermission(theActivity, "android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(theActivity, new String[]{"android.permission.WRITE_EXTERNAL_STORAGE"}, MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+            // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+            // app-defined int constant. The callback method gets the
+            // result of the request.
+        } else {
+            // Permission has already been granted
+            return true;
+        }
+        return false;
+    }
+
+
+
 }
