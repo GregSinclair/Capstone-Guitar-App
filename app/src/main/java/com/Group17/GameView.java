@@ -46,11 +46,13 @@ public class GameView extends SurfaceView implements Runnable {
     private TriggerVisual tracker;
     private Fretboard fretboard;
     private String sentMessage = "";
-
+    private String songName;
     private BluetoothService myService;
     private boolean isServiceBound=false;
+    private boolean IOPermissions=false;
 
     private static final String TAG = "GameView";
+
 
 
     public GameView(Context context) {
@@ -58,7 +60,7 @@ public class GameView extends SurfaceView implements Runnable {
     }
     public GameView(GameActivity activity, int screenX, int screenY, JSONArray song, BluetoothService myService, String songName) {
         super(activity);
-
+        this.songName = songName;
         this.activity = activity;
 
         this.myService = myService;
@@ -127,6 +129,16 @@ public class GameView extends SurfaceView implements Runnable {
             e.printStackTrace();
         }
 
+        if (fretboard.finished){
+            if(MemoryInterface.checkReadPermission(activity)){
+                if(MemoryInterface.checkWritePermission(activity)) {
+                    IOPermissions = true; //this stops it from bypassing that check
+                }
+            }
+            while(!IOPermissions){} //again, this should be modified to timeout eventually
+            concludeSong();
+        }
+
         //this will be where we maintain the bluetooth connection and try to reconnect if it drops
         //currently nothing is implemented in the game or training that involves this, assumed it runs perfectly and doesn't need to be manually stopped
 
@@ -164,6 +176,16 @@ public class GameView extends SurfaceView implements Runnable {
 
         }
 
+    }
+
+    private void concludeSong(){
+        JSONObject json = new JSONObject();
+        try {
+            json.put(songName, fretboard.getFinalScore());
+            MemoryInterface.writeFile(json, "scores.txt");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void waitBeforeExiting() {
@@ -206,6 +228,10 @@ public class GameView extends SurfaceView implements Runnable {
             e.printStackTrace();
         }
 
+    }
+
+    public void setPermissions(){
+        IOPermissions=true;
     }
 
 

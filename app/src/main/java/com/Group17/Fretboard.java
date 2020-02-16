@@ -40,7 +40,7 @@ public class Fretboard {
     private int lastBeatPos = 0;
     private int lastTrueBeat = 0;
     public boolean finished = false;
-
+    private int finalScore;
     private static final String TAG = "Fretboard";
 
     private String bluetooth_message="00";
@@ -315,14 +315,8 @@ public class Fretboard {
                 fret = fretsFinal.next();
                 result += fret.viewFeedback();
             }
-            result = (int)((result*100.00)/(6*beatTreadmill.size()));
-            JSONObject json = new JSONObject();
-            try {
-                json.put(songName,result);
-                MemoryInterface.writeFile(json, "scores.txt");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            finalScore = (int)((result*100.00)/(6*beatTreadmill.size()));
+
             //write the results to file
             Log.d(TAG, "Fretboard: score is "+result);
             finished = true;
@@ -332,6 +326,10 @@ public class Fretboard {
         Bitmap croppedFretboard = Bitmap.createBitmap(fretboard, posX, 0, beatWidth * fretsOnScreen, fretboard.getHeight());
 
         return croppedFretboard;
+    }
+
+    public int getFinalScore(){
+        return finalScore;
     }
 
     public String getNextMessage() {

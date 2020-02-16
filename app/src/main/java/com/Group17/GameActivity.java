@@ -6,11 +6,13 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.Context;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -170,4 +172,35 @@ public class GameActivity extends AppCompatActivity {
             Log.d("ACTIVITY SetBluetooth", "NULL");
         }
     }
+
+    @Override //throw this in the game as well
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    MemoryInterface.checkWritePermission(this);
+                } else {
+                    Toast.makeText(getApplicationContext(),"Unable to get permissions: READ",Toast.LENGTH_SHORT).show();
+                    this.finish();
+                }
+                return;
+            }
+            case 2: {
+
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    gameView.setPermissions();
+                } else {
+                    Toast.makeText(getApplicationContext(),"Unable to get permissions: WRITE",Toast.LENGTH_SHORT).show();
+                    this.finish();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request.
+        }
+    }
+
+
 }

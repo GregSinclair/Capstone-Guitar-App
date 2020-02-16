@@ -43,12 +43,17 @@ public class SettingsMenu extends AppCompatActivity {
         }
 
         while(!gotPermissions){} //ideally it wouldnt freeze up if the permissions arent granted, but I should really have this loop terminate after 10s or so
-
+        //Still need this so it doesn't try to load settings on an empty file
         setContentView(R.layout.list_screen);
 
         initSettings();
 
+        loadButtons();
 
+
+    }
+
+    private void loadButtons(){
         JSONObject json = MemoryInterface.readFile(fileName);
 
         //does this have to be in the onCreate? Throwing this in a function and recreating the list after a press would be good. Try that after this is stable
@@ -88,10 +93,10 @@ public class SettingsMenu extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                loadButtons();
             }
         });
     }
-
 
     private void initSettings(){
         //check if the settings file exists, if not call resetSettings
