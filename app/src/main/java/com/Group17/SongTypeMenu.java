@@ -16,6 +16,7 @@ import android.widget.ListView;
 import android.widget.*;
 import android.os.Bundle;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,13 +28,13 @@ import java.util.List;
 import java.util.Set;
 
 
-public class SongList extends AppCompatActivity {
+public class SongTypeMenu extends AppCompatActivity {
 
     ListView songList;
     Intent resultIntent;
-    private static final String TAG = "SongList";
+    private static final String TAG = "SongTypeMenu";
     private String songName;
-    private int songType;
+    private JSONArray partNames;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,33 +42,43 @@ public class SongList extends AppCompatActivity {
         setContentView(R.layout.list_screen);
         Intent intent = getIntent();
         songName = intent.getStringExtra("songName");
-        songType = intent.getIntExtra("songType",0);
 
         try {
             String jtxt = loadJSONFromAsset(this);
             JSONObject json = new JSONObject(jtxt);
+            partNames = (json.getJSONObject(songName)).getJSONArray("partNames");
 
             List<String> songNames = new ArrayList<String>();
-            Iterator<String> songIterator=json.keys();
-            while(songIterator.hasNext()){
-                songNames.add(songIterator.next());
-            } //we will eventually display the score on the song names, use a special character so this can be delineated like I did with the settings
+            songNames.add("Full Song");
+            for(int i=0;i<partNames.length();i++){
+                songNames.add(partNames.get(i).toString());
+            }
+            //maybe add a "memorized" option here, where the numbers aren't shown? There's probably a better place for it tho
             songList=(ListView)findViewById(R.id.list_view_song);
             ArrayAdapter<String> songListAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, songNames);
             songList.setAdapter(songListAdapter);
             songList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    TextView tv = (TextView) view;
-                    Toast.makeText(getApplicationContext(), tv.getText(), Toast.LENGTH_LONG).show();
-                    if(songType==0){ //only need this screen for a full song
-                        resultIntent = new Intent( SongList.this, SongTypeMenu.class);
+                TextView tv = (TextView) view;
+                Toast.makeText(getApplicationContext(), tv.getText(), Toast.LENGTH_LONG).show();
+
+                int partKey=-1;
+
+                for(int i=0;i<partNames.length();i++){
+                    try {
+                        if (tv.getText().equals(partNames.getString(i))){
+                            partKey=i;
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                    else{
-                        resultIntent = new Intent( SongList.this, SettingsMenu.class);
-                    }
-                    resultIntent.putExtra("song", tv.getText());
-                    startActivity(resultIntent);
+                }
+
+                resultIntent = new Intent( SongTypeMenu.this, GameActivity.class);
+                resultIntent.putExtra("songName", tv.getText());
+                    resultIntent.putExtra("partKey", partKey);
+                startActivity(resultIntent);
                 }
             });
 
@@ -93,17 +104,7 @@ public class SongList extends AppCompatActivity {
         String json = null;
         try {
 
-            InputStream is=null;
-
-            if(songType==0) {
-                is = context.getAssets().open("songs.json");
-            }
-            else if(songType==1){
-                is = context.getAssets().open("chords.json");
-            }
-            else if(songType==2){
-                is = context.getAssets().open("scales.json");
-            }
+            InputStream is=context.getAssets().open("songs.json");
 
             int size = is.available();
 

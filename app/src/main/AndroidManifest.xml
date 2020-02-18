@@ -27,6 +27,9 @@
         <activity android:name=".TempoSetupActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.noActionBar"/>
+        <activity android:name=".SongTypeMenu"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.noActionBar"/>
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait"

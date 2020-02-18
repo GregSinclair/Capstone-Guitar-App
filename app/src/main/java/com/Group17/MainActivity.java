@@ -38,20 +38,35 @@ public class MainActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        setContentView(R.layout.title_screen);
+        setContentView(R.layout.start_screen);
 
 
-        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.b_songs).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                Intent intent = new Intent(MainActivity.this, GameActivity.class);
-                if(theSong==null){
-                    intent.putExtra("songName", "Fun");
-                }
-                else{
-                    intent.putExtra("songName", theSong);
-                }
+                Intent intent = new Intent(MainActivity.this, SongList.class);
+                intent.putExtra("songType", 0);
+                startActivity(intent);
+            }
+        });
+
+        findViewById(R.id.b_chords).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(MainActivity.this, SongList.class);
+                intent.putExtra("songType", 1);
+                startActivity(intent);
+            }
+        });
+
+        findViewById(R.id.b_scales).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(MainActivity.this, SongList.class);
+                intent.putExtra("songType", 2);
                 startActivity(intent);
             }
         });
@@ -61,25 +76,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) { //arbitrary testing button
 
-                randomTempoGenerator myRTG = new randomTempoGenerator(50, 0.8);
-            }
-        });
-
-        findViewById(R.id.button4).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Intent intent = new Intent(MainActivity.this, SongList.class);
-                startActivityForResult(intent,1);
-            }
-        });
-
-        findViewById(R.id.b_tempo).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Intent intent = new Intent(MainActivity.this, TempoSetupActivity.class);
-                startActivity(intent);
             }
         });
 
@@ -102,16 +98,6 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, BluetoothConnection.class);
 
                 startActivityForResult(intent,1); //tries to get a BTA intent
-            }
-        });
-
-        findViewById(R.id.button_training).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Intent intent = new Intent(MainActivity.this, TrainingActivity.class);
-                intent.putExtra("noteName", "A");
-                startActivity(intent); //tries to get a BTA intent
             }
         });
 
