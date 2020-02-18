@@ -38,7 +38,7 @@ public class GameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
         songName = intent.getStringExtra("songName");
-
+        int partKey = intent.getIntExtra("partKey",-1); //make sure the intent passes this in based on user input
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         point = new Point();
@@ -48,7 +48,19 @@ public class GameActivity extends AppCompatActivity {
         try {
             String jtxt = loadJSONFromAsset(this);
             JSONObject json = new JSONObject(jtxt);
-            song = json.getJSONArray(songName);
+            JSONObject songObject = json.getJSONObject(songName);
+            if (partKey == -1) {
+                song = songObject.getJSONArray("song");
+            }
+            else{
+                JSONArray tempSong = songObject.getJSONArray("song");
+                int a= (int)((songObject.getJSONArray("parts")).getJSONArray(partKey)).get(0);
+                int b= (int)((songObject.getJSONArray("parts")).getJSONArray(partKey)).get(1);
+                song = new JSONArray();
+                for (int i=a;i<=b;i++){
+                    song.put(tempSong.getJSONArray(i));
+                }
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }

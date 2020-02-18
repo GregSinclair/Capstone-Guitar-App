@@ -24,6 +24,9 @@
         <activity android:name=".TrainingActivity"
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.noActionBar"/>
+        <activity android:name=".TempoSetupActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.noActionBar"/>
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait"

@@ -66,5 +66,22 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button_training" />
 
+    <Button
+        android:id="@+id/b_test"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Test"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/b_settings" />
+
+    <Button
+        android:id="@+id/b_tempo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="tempo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/b_test" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

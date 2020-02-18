@@ -57,12 +57,29 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+        findViewById(R.id.b_test).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) { //arbitrary testing button
+
+                randomTempoGenerator myRTG = new randomTempoGenerator(50, 0.8);
+            }
+        });
+
         findViewById(R.id.button4).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 Intent intent = new Intent(MainActivity.this, SongList.class);
                 startActivityForResult(intent,1);
+            }
+        });
+
+        findViewById(R.id.b_tempo).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(MainActivity.this, TempoSetupActivity.class);
+                startActivity(intent);
             }
         });
 
