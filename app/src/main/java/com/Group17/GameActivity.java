@@ -34,6 +34,7 @@ public class GameActivity extends AppCompatActivity {
     private Point point;
     private GameActivity context;
     private String songName;
+    private boolean repeatingGame;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +42,7 @@ public class GameActivity extends AppCompatActivity {
         Intent intent = getIntent();
         songName = intent.getStringExtra("songName");
         int partKey = intent.getIntExtra("partKey",-1); //make sure the intent passes this in based on user input
+        this.repeatingGame = intent.getBooleanExtra("repeatingGame", false);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         point = new Point();
@@ -166,7 +168,7 @@ public class GameActivity extends AppCompatActivity {
             Log.d("ACTIVITY SetBluetooth", "Not NULL");
             if(song != null)
             {
-                gameView = new GameView(this, point.x, point.y, song, myService, songName);
+                gameView = new GameView(this, point.x, point.y, song, myService, songName, repeatingGame);
                 setContentView(gameView);
                 //gameView.beginUnthreadedGame();
                 gameView.beginGame();

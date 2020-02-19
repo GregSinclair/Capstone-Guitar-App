@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -41,14 +42,15 @@ public class Fretboard {
     private int lastTrueBeat = 0;
     public boolean finished = false;
     private int finalScore;
+    private boolean repeatingGame = false;
     private static final String TAG = "Fretboard";
-
+    private int sleeptime;
     private String bluetooth_message="00";
 
     private int duration;
 
-    public Fretboard(Resources res, int screenX, int screenY, JSONArray jsonSong, int fretsOnScreen, int spacing, int tempo, int sleeptime, int trackerX, String songName) {
-        duration = 1500; //figure out the actual conversion later
+    public Fretboard(Resources res, int screenX, int screenY, JSONArray jsonSong, int fretsOnScreen, int spacing, int tempo, int sleeptime, int trackerX, String songName, boolean repeatingGame) {
+        this.sleeptime = sleeptime;
         beatIndexCounter = 0;
         song = jsonSong;
         xsize = screenX;
@@ -59,12 +61,14 @@ public class Fretboard {
         this.fretsOnScreen = fretsOnScreen;
         this.res = res;
         this.trackerX = trackerX;
+        this.repeatingGame = repeatingGame;
         nextMessage = "";
         beatCounter = 0;
         spaceInterval = spacing;
         beatWidth = screenX/fretsOnScreen;
         beatHeight = screenY;
         speed = (int)( (tempo * beatWidth * (spacing + 1) * sleeptime) / 60000.0 );
+        duration = getDuration(); //figure out the actual conversion later
         beatTreadmill = new ArrayList<>(); //jan 30: gonna rework beatTreadmill to hang onto the whole song now
 
 
@@ -93,6 +97,11 @@ public class Fretboard {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private int getDuration()
+    {
+        return (beatWidth * sleeptime / speed) ;
     }
 
     private void loadBeatTreadmill() { //loads up the entire song at start
@@ -127,9 +136,21 @@ public class Fretboard {
     }
 
     private void repeatSong(){
-        //have a little time where a Toast gives the score, then reset
+        beatTreadmill = new ArrayList<>();
+        lastBeatPos=0;
+        for(int i=0; i<fretsOnScreen; i++) //fill up the screen with empty beats
+        {
+            beatTreadmill.add(createEmptyBeat(lastBeatPos++));
+        }
         loadBeatTreadmill();
-
+        //lastTrueBeat = lastBeatPos - 1;
+        for(int i=0; i<fretsOnScreen+1; i++) //fill up the screen with empty beats
+        {
+            beatTreadmill.add(createEmptyBeat(lastBeatPos++));
+        }
+        lastBeatPos--;
+        beatCounter=0;
+        lastFeedback=null;
     }
 
     private Beat createEmptyBeat(int b)
@@ -182,14 +203,20 @@ public class Fretboard {
 
 
     public void setFeedback(JSONObject newFeedback) {
+        lastFeedback = newFeedback;
+        /*
         try {
-            if(newFeedback.getInt("sequence") > lastFeedback.getInt("sequence")) { //note that this means some can be skipped. might be troubling. look into possible setups for this later
+
+            //if(lastFeedback == null || newFeedback.getInt("sequence") > lastFeedback.getInt("sequence")) { //note that this means some can be skipped. might be troubling. look into possible setups for this later
+
                 lastFeedback = newFeedback;
                // Log.d("Fretboard", "feedback updated");
-            }
+            //}
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+         */
     }
 
     private void checkFeedback(int i){
@@ -280,11 +307,11 @@ public class Fretboard {
         int i = 0;
         Beat fret=frets.next();
         while (frets.hasNext()&&fret.getIndex() <= lastTrueBeat) {
-            if(fret.isSent() && !fret.gottenFeedback()){ //case where we are looking for the response
+            if(fret.isSent() && !fret.gottenFeedback() && !fret.isEmpty()){ //case where we are looking for the response
                 checkFeedback(fret.getIndex());
                 //looks like the sprite is redrawn in CF, is this all there is?
             }
-            else if(fret.isTriggered(hitbox) && !fret.isSent()) { //case where we must send a new message
+            else if(fret.isTriggered(hitbox) && !fret.isSent() && !fret.isEmpty()) { //case where we must send a new message
                 fret.sendBeat();
                 int noteArray[] = fret.getNoteArray();
                 JSONObject messageJSON = new JSONObject();
@@ -319,13 +346,22 @@ public class Fretboard {
             Iterator<Beat> fretsFinal = beatTreadmill.iterator();
             while (fretsFinal.hasNext()) {
                 fret = fretsFinal.next();
-                result += fret.viewFeedback();
+                if(!fret.isEmpty()){
+                    result += fret.viewFeedback();
+                }
             }
             finalScore = (int)((result*100.00)/(6*beatTreadmill.size()));
-
+            //later on, maintain the previous and best score in the UI
             //write the results to file
             Log.d(TAG, "Fretboard: score is "+result);
-            finished = true;
+
+            if (repeatingGame = false){
+                finished = true;
+            }
+            else {
+                repeatSong();
+            }
+
         }
 
 

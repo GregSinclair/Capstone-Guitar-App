@@ -17,8 +17,8 @@ public class Beat {
     Bitmap beatSprite = null;
 
     private boolean drawn = false;
-
-    private boolean sentBeat;
+    private boolean emptyBeat=true;
+    private boolean sentBeat=false;
 
     private int[] feedback = new int[6]; //use this so that the Beat array can be used to reconstruct the song afterwards and give feedback
 
@@ -31,8 +31,12 @@ public class Beat {
         this.xStart = 0;
         this.res = res;
         beatIndex = index;
-        sentBeat = false;
         notes = frets;
+        for(int i=0;i<notes.length;i++){
+            if(notes[i].getNoteNum()!=-2){
+                emptyBeat=false;
+            }
+        }
     }
 
     private void initSprite(){
@@ -87,6 +91,10 @@ public class Beat {
         return this.beatSprite.getHeight();
     }
 
+    public boolean isEmpty(){
+        return emptyBeat;
+    }
+
     private void updateBitmap(int position, Bitmap newSprite) { //smashes a new sprite onto the current pile
         int top = beatSprite.getHeight() * position / 6 + (beatSprite.getHeight() / 6 - newSprite.getHeight()) / 2;
         int left = (beatSprite.getWidth() - newSprite.getWidth()) / 2;
@@ -117,6 +125,9 @@ public class Beat {
     }
 
     public boolean isSent() {
+        if(beatIndex == 0 || beatIndex == -5){
+            return true;
+        }
         return sentBeat;
     }
     public void sendBeat() {
