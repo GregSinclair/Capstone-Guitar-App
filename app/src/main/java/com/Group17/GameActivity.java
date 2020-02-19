@@ -16,6 +16,8 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -68,26 +70,21 @@ public class GameActivity extends AppCompatActivity {
         serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
         bindService();
         /*
-        int i=0;
-        while(i<100 && !isServiceBound) {
-            i++;
-            bindService();
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask(){
+            int count=0;
+            @Override
+            public void run(){
+                while(count<6) {
+                    if (gameView == null) {
+                        count++;
+                    }
+                }
+
             }
-        }
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        if(i==100 && !isServiceBound){
-            unbindService();
-            finish();
-        }
-        */
+        }, 0, 1000);
+
+         */
     }
 
 
@@ -145,19 +142,14 @@ public class GameActivity extends AppCompatActivity {
                     myService=myServiceBinder.getService();
                     isServiceBound=true;
                     play();
-
-
                 }
-
                 @Override
                 public void onServiceDisconnected(ComponentName componentName) {
                     isServiceBound=false;
                 }
             };
         }
-
         bindService(serviceIntent,serviceConnection,Context.BIND_AUTO_CREATE);
-
     }
 
     private void unbindService(){
@@ -176,7 +168,21 @@ public class GameActivity extends AppCompatActivity {
             {
                 gameView = new GameView(this, point.x, point.y, song, myService, songName);
                 setContentView(gameView);
+                //gameView.beginUnthreadedGame();
                 gameView.beginGame();
+                //finish();
+                /*
+                gameView = new GameView(this, point.x, point.y, song, myService, songName);
+                setContentView(gameView);
+                Thread gameViewThread = new Thread(gameView);
+
+                gameViewThread.start();
+
+                while(!gameView.isFinished){}
+                //setContentView(this); //idk whats up with this
+                finish();
+                */
+
             }
         }
         else

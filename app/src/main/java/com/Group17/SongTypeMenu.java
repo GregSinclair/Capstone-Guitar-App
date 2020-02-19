@@ -76,7 +76,7 @@ public class SongTypeMenu extends AppCompatActivity {
                 }
 
                 resultIntent = new Intent( SongTypeMenu.this, GameActivity.class);
-                resultIntent.putExtra("songName", tv.getText());
+                resultIntent.putExtra("songName", songName);
                     resultIntent.putExtra("partKey", partKey);
                 startActivity(resultIntent);
                 }

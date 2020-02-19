@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
+    @Override //not used anymore. in fact, no reason to check for bt at the start, game does it
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d(TAG, "in activity result"); //this doesn't seem to ever trigger
         super.onActivityResult(requestCode, resultCode, data);

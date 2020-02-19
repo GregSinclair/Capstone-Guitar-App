@@ -126,6 +126,12 @@ public class Fretboard {
         }
     }
 
+    private void repeatSong(){
+        //have a little time where a Toast gives the score, then reset
+        loadBeatTreadmill();
+
+    }
+
     private Beat createEmptyBeat(int b)
     {
         //Creates a beat with nothing in it
@@ -309,7 +315,7 @@ public class Fretboard {
         //this is such a stupid place to do the song end wrapup, I should set a flag and move all this to view or activity instead
         if (beatCounter >= lastBeatPos - fretsOnScreen) { //this is the final fret, implying the song is finished
             //verify that this works, needs to actually register the feedback for the last beat, might need i-1 or something
-            int result=0;
+            int result=0; //have it either compute the score or just infinitely loop depending on the mode
             Iterator<Beat> fretsFinal = beatTreadmill.iterator();
             while (fretsFinal.hasNext()) {
                 fret = fretsFinal.next();

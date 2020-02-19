@@ -88,6 +88,22 @@ public class TrainingActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        JSONObject json = new JSONObject();
+        try {
+            json.put("type", 5);
+            json.put("sequence", 0);
+            json.put("timeStamp", 420);
+            json.put("values", null);
+            json.put("duration", -1); //duration of -1 indicates training mode
+            myService.sendMessage(json.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+   }
+
     public String loadJSONFromAsset(Context context) {
         String json = null;
         try {

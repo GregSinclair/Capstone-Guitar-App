@@ -29,7 +29,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class GameView extends SurfaceView implements Runnable {
+public class GameView extends SurfaceView implements Runnable  {
 
     private Thread thread;
     private boolean isPlaying, isGameOver = false;
@@ -53,7 +53,7 @@ public class GameView extends SurfaceView implements Runnable {
 
     private static final String TAG = "GameView";
 
-
+    public boolean isFinished=false;
 
     public GameView(Context context) {
         super(context);
@@ -109,13 +109,14 @@ public class GameView extends SurfaceView implements Runnable {
     @Override
     public void run() {
 
-        while (!fretboard.finished) {
+        while (!isFinished) {
 
             update ();
             draw ();
             sleep ();
 
         }
+
 
     }
 
@@ -137,6 +138,9 @@ public class GameView extends SurfaceView implements Runnable {
             }
             while(!IOPermissions){} //again, this should be modified to timeout eventually
             concludeSong();
+            isFinished=true;
+            waitBeforeExiting();
+
         }
 
         //this will be where we maintain the bluetooth connection and try to reconnect if it drops
@@ -160,17 +164,6 @@ public class GameView extends SurfaceView implements Runnable {
                 sentMessage = newMessage;
                 myService.sendMessage(newMessage);
             }
-
-            if (isGameOver) {
-                isPlaying = false;
-
-                getHolder().unlockCanvasAndPost(canvas);
-
-                waitBeforeExiting ();
-                return;
-            }
-
-
 
             getHolder().unlockCanvasAndPost(canvas);
 
@@ -212,11 +205,14 @@ public class GameView extends SurfaceView implements Runnable {
     public void resume () {
     }
 
-    public void beginGame()
+    public void beginGame() //old threading method
     {
-        isPlaying = true;
         thread = new Thread(this);
         thread.start();
+    }
+
+    public void beginUnthreadedGame(){ //just causes blackscreen
+        run();
     }
 
     public void pause () {

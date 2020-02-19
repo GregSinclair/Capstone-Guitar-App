@@ -32,7 +32,6 @@ public class SongList extends AppCompatActivity {
     ListView songList;
     Intent resultIntent;
     private static final String TAG = "SongList";
-    private String songName;
     private int songType;
 
     @Override
@@ -40,7 +39,7 @@ public class SongList extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.list_screen);
         Intent intent = getIntent();
-        songName = intent.getStringExtra("songName");
+
         songType = intent.getIntExtra("songType",0);
 
         try {
@@ -66,7 +65,7 @@ public class SongList extends AppCompatActivity {
                     else{
                         resultIntent = new Intent( SongList.this, SettingsMenu.class);
                     }
-                    resultIntent.putExtra("song", tv.getText());
+                    resultIntent.putExtra("songName", tv.getText());
                     startActivity(resultIntent);
                 }
             });
