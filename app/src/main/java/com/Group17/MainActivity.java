@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Intent intent = new Intent(MainActivity.this, SongList.class);
                 intent.putExtra("songType", 0);
-                startActivity(intent);
+                startActivity(intent); //if this works, apply it to all the others
             }
         });
 
@@ -67,6 +67,15 @@ public class MainActivity extends AppCompatActivity {
 
                 Intent intent = new Intent(MainActivity.this, SongList.class);
                 intent.putExtra("songType", 2);
+                startActivity(intent);
+            }
+        });
+
+        findViewById(R.id.b_tempo).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(MainActivity.this, TempoSetupActivity.class);
                 startActivity(intent);
             }
         });

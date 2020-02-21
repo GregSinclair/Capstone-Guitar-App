@@ -77,7 +77,14 @@ public class SongTypeMenu extends AppCompatActivity {
 
                 resultIntent = new Intent( SongTypeMenu.this, GameActivity.class);
                 resultIntent.putExtra("songName", songName);
-                    resultIntent.putExtra("partKey", partKey);
+                if (partKey == -1){
+                    resultIntent.putExtra("repeatingSong", false);
+                }
+                else{
+                    resultIntent.putExtra("repeatingSong", true);
+                }
+
+                resultIntent.putExtra("partKey", partKey);
                 startActivity(resultIntent);
                 }
             });

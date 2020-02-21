@@ -42,7 +42,7 @@ public class GameView extends SurfaceView implements Runnable  {
 
     private GameActivity activity;
     private Background background;
-    private final int sleeptime = 50;
+    private final int sleeptime = 30;
     private TriggerVisual tracker;
     private Fretboard fretboard;
     private String sentMessage = "";
@@ -50,7 +50,7 @@ public class GameView extends SurfaceView implements Runnable  {
     private BluetoothService myService;
     private boolean isServiceBound=false;
     private boolean IOPermissions=false;
-
+    private boolean repeatingGame;
     private static final String TAG = "GameView";
 
     public boolean isFinished=false;
@@ -58,11 +58,11 @@ public class GameView extends SurfaceView implements Runnable  {
     public GameView(Context context) {
         super(context);
     }
-    public GameView(GameActivity activity, int screenX, int screenY, JSONArray song, BluetoothService myService, String songName) {
+    public GameView(GameActivity activity, int screenX, int screenY, JSONArray song, BluetoothService myService, String songName, boolean repeatingGame) {
         super(activity);
         this.songName = songName;
         this.activity = activity;
-
+        this.repeatingGame = repeatingGame;
         this.myService = myService;
 
         prefs = activity.getSharedPreferences("game", Context.MODE_PRIVATE);
@@ -97,13 +97,13 @@ public class GameView extends SurfaceView implements Runnable  {
         paint.setColor(Color.WHITE);
 
         int fretsOnScreen = 10;
-        int tempo = 40;
+        int tempo = 50;
         int spacing = 2;
 
         tracker = new TriggerVisual(getResources(), screenX/fretsOnScreen, screenY);
         tracker.x = (int) (screenX * 0.2);
 
-        fretboard = new Fretboard(getResources(), screenX, (int) (screenY * 0.8), song, fretsOnScreen, spacing, tempo, sleeptime, tracker.x, songName);
+        fretboard = new Fretboard(getResources(), screenX, (int) (screenY * 0.8), song, fretsOnScreen, spacing, tempo, sleeptime, tracker.x, songName, repeatingGame);
     }
 
     @Override
@@ -116,7 +116,7 @@ public class GameView extends SurfaceView implements Runnable  {
             sleep ();
 
         }
-
+        activity.finish();
 
     }
 
@@ -139,7 +139,6 @@ public class GameView extends SurfaceView implements Runnable  {
             while(!IOPermissions){} //again, this should be modified to timeout eventually
             concludeSong();
             isFinished=true;
-            waitBeforeExiting();
 
         }
 
@@ -209,6 +208,9 @@ public class GameView extends SurfaceView implements Runnable  {
     {
         thread = new Thread(this);
         thread.start();
+        //while(!isFinished){}
+
+
     }
 
     public void beginUnthreadedGame(){ //just causes blackscreen
