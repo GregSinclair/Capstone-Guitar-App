@@ -35,6 +35,7 @@ public class SongTypeMenu extends AppCompatActivity {
     private static final String TAG = "SongTypeMenu";
     private String songName;
     private JSONArray partNames;
+    private int songType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +43,7 @@ public class SongTypeMenu extends AppCompatActivity {
         setContentView(R.layout.list_screen);
         Intent intent = getIntent();
         songName = intent.getStringExtra("songName");
-
+        songType = intent.getIntExtra("songType",0);
         try {
             String jtxt = loadJSONFromAsset(this);
             JSONObject json = new JSONObject(jtxt);
@@ -79,10 +80,20 @@ public class SongTypeMenu extends AppCompatActivity {
                 resultIntent.putExtra("songName", songName);
                 if (partKey == -1){
                     resultIntent.putExtra("repeatingSong", false);
+
                 }
                 else{
                     resultIntent.putExtra("repeatingSong", true);
+
                 }
+
+                if(songType==0){
+                    resultIntent.putExtra("notesID", "song");
+                }
+                else if(songType==1){
+                    resultIntent.putExtra("notesID", tv.getText());
+                }
+                //case for scales goes here
 
                 resultIntent.putExtra("partKey", partKey);
                 startActivity(resultIntent);
