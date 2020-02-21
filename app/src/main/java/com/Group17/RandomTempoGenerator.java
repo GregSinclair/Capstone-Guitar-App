@@ -4,11 +4,11 @@ import android.util.Log;
 
 import org.json.JSONArray;
 
-public class randomTempoGenerator { //creates a random song for tempo practice
+public class RandomTempoGenerator { //creates a random song for tempo practice
 
     public JSONArray randomSong;
 
-    public randomTempoGenerator(int length, double density){ //density between 0 and 1
+    public RandomTempoGenerator(int length, double density){ //density between 0 and 1
         randomSong = new JSONArray();
         JSONArray emptyBeat = new JSONArray();
         JSONArray zeroBeat = new JSONArray();

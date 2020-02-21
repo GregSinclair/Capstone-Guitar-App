@@ -35,6 +35,7 @@ public class GameActivity extends AppCompatActivity {
     private GameActivity context;
     private String songName;
     private boolean repeatingGame;
+    private int tempoBPM=69;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,31 +43,39 @@ public class GameActivity extends AppCompatActivity {
         Intent intent = getIntent();
         songName = intent.getStringExtra("songName");
         int partKey = intent.getIntExtra("partKey",-1); //make sure the intent passes this in based on user input
-        this.repeatingGame = intent.getBooleanExtra("repeatingGame", false);
+        this.repeatingGame = intent.getBooleanExtra("repeatingSong", false);
+        tempoBPM = intent.getIntExtra("tempo", 69);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         point = new Point();
         getWindowManager().getDefaultDisplay().getSize(point);
         song = null;
         context = this;
-        try {
-            String jtxt = loadJSONFromAsset(this);
-            JSONObject json = new JSONObject(jtxt);
-            JSONObject songObject = json.getJSONObject(songName);
-            if (partKey == -1) {
-                song = songObject.getJSONArray("song");
-            }
-            else{
-                JSONArray tempSong = songObject.getJSONArray("song");
-                int a= (int)((songObject.getJSONArray("parts")).getJSONArray(partKey)).get(0);
-                int b= (int)((songObject.getJSONArray("parts")).getJSONArray(partKey)).get(1);
-                song = new JSONArray();
-                for (int i=a;i<=b;i++){
-                    song.put(tempSong.getJSONArray(i));
+
+        if (songName.equals("tempo_game_reserved_name")){
+            RandomTempoGenerator myRTG = new RandomTempoGenerator(50, intent.getDoubleExtra("density",0.5)); //no reason to get length from user
+            song=myRTG.randomSong;
+        }
+        else{
+            try {
+                String jtxt = loadJSONFromAsset(this);
+                JSONObject json = new JSONObject(jtxt);
+                JSONObject songObject = json.getJSONObject(songName);
+                if (partKey == -1) {
+                    song = songObject.getJSONArray("song");
                 }
+                else{
+                    JSONArray tempSong = songObject.getJSONArray("song");
+                    int a= (int)((songObject.getJSONArray("parts")).getJSONArray(partKey)).get(0);
+                    int b= (int)((songObject.getJSONArray("parts")).getJSONArray(partKey)).get(1);
+                    song = new JSONArray();
+                    for (int i=a;i<=b;i++){
+                        song.put(tempSong.getJSONArray(i));
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
 
         serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
@@ -172,6 +181,7 @@ public class GameActivity extends AppCompatActivity {
                 setContentView(gameView);
                 //gameView.beginUnthreadedGame();
                 gameView.beginGame();
+
                 //finish();
                 /*
                 gameView = new GameView(this, point.x, point.y, song, myService, songName);

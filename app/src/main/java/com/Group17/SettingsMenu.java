@@ -128,9 +128,11 @@ public class SettingsMenu extends AppCompatActivity {
     private JSONObject getDefaultSettings(){
         JSONObject jSettings = new JSONObject();
         try {
-            jSettings.put("Manual TrainingProgression", "off");
             jSettings.put("Tempo Override", "off");
             jSettings.put("Training Mode", "off");
+            jSettings.put("Manual Training Progression", "off");
+
+
             jSettings.put("test value 2", "off");
             jSettings.put("test value 3", "off");
             //add more

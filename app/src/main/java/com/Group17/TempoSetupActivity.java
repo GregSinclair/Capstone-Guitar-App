@@ -2,7 +2,6 @@ package com.Group17;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
@@ -32,9 +31,14 @@ public class TempoSetupActivity extends AppCompatActivity {
                 EditText densityInput = findViewById(R.id.text_density);
                 double density = Double.parseDouble(densityInput.getText().toString());
 
-                randomTempoGenerator myRTG = new randomTempoGenerator(50, density); //no reason to get length from user
+                RandomTempoGenerator myRTG = new RandomTempoGenerator(50, density); //no reason to get length from user
                 //be sure to actually use the tempo variable later
-
+                Intent intent = new Intent(TempoSetupActivity.this, GameActivity.class);
+                intent.putExtra("tempo", tempo);
+                intent.putExtra("density", density);
+                intent.putExtra("songName", "tempo_game_reserved_name");
+                intent.putExtra("repeatingGame", false);
+                startActivity(intent);
                 //check the settings, then pass the parameters and start an activity, RTG should probably be instantiated inside to be consistent, pass in the arguments
 
             }

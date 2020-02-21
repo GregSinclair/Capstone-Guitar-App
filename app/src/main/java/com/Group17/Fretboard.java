@@ -136,6 +136,9 @@ public class Fretboard {
     }
 
     private void repeatSong(){
+        if(!repeatingGame){
+            return;
+        }
         beatTreadmill = new ArrayList<>();
         lastBeatPos=0;
         for(int i=0; i<fretsOnScreen; i++) //fill up the screen with empty beats
@@ -185,7 +188,7 @@ public class Fretboard {
         }
         */
         int j=0;
-        while (j<fretsOnScreen+1) {
+        while (j<fretsOnScreen+1 && (beatCounter+j)<beatTreadmill.size()) {
             Beat fret = beatTreadmill.get(beatCounter + j);
             fret.setPosition(j * beatWidth); //they need to know their position for collision purposes
             drawnBeats[j] = fret;
@@ -194,7 +197,9 @@ public class Fretboard {
         //now the n+1 beats are selected, draw them
         Canvas comboImage = new Canvas(fretboard);
         for(int m=0;m<fretsOnScreen+1;m++){
-            comboImage.drawBitmap(drawnBeats[m].getBeat(), m*beatWidth, 0, null);
+            if(drawnBeats[m]!=null){
+                comboImage.drawBitmap(drawnBeats[m].getBeat(), m*beatWidth, 0, null);
+            }
         }
         //this is the full image, gets scrolled along the screen
 
@@ -355,7 +360,7 @@ public class Fretboard {
             //write the results to file
             Log.d(TAG, "Fretboard: score is "+result);
 
-            if (repeatingGame = false){
+            if (repeatingGame == false){
                 finished = true;
             }
             else {

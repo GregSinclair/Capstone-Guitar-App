@@ -84,7 +84,7 @@ public class SongTypeMenu extends AppCompatActivity {
                     resultIntent.putExtra("repeatingSong", true);
                 }
 
-                    resultIntent.putExtra("partKey", partKey);
+                resultIntent.putExtra("partKey", partKey);
                 startActivity(resultIntent);
                 }
             });

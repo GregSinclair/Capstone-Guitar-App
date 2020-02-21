@@ -116,7 +116,7 @@ public class GameView extends SurfaceView implements Runnable  {
             sleep ();
 
         }
-
+        activity.finish();
 
     }
 
@@ -139,7 +139,6 @@ public class GameView extends SurfaceView implements Runnable  {
             while(!IOPermissions){} //again, this should be modified to timeout eventually
             concludeSong();
             isFinished=true;
-            waitBeforeExiting();
 
         }
 
@@ -209,6 +208,9 @@ public class GameView extends SurfaceView implements Runnable  {
     {
         thread = new Thread(this);
         thread.start();
+        //while(!isFinished){}
+
+
     }
 
     public void beginUnthreadedGame(){ //just causes blackscreen

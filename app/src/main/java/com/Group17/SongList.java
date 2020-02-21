@@ -63,11 +63,13 @@ public class SongList extends AppCompatActivity {
                         resultIntent = new Intent( SongList.this, SongTypeMenu.class);
                     }
                     else{
-                        resultIntent = new Intent( SongList.this, GameView.class);
+                        resultIntent = new Intent( SongList.this, GameActivity.class);
+                        resultIntent.putExtra("repeatingSong", true);
                         //there's some weirdness here, figure it out after we have the scales.
                         //probably need a bunch of intent extras, including repeatingSong=true
                     }
                     resultIntent.putExtra("songName", tv.getText());
+                    resultIntent.putExtra("partKey", -1);
                     startActivity(resultIntent);
                 }
             });
