@@ -59,13 +59,12 @@ public class SongList extends AppCompatActivity {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     TextView tv = (TextView) view;
                     Toast.makeText(getApplicationContext(), tv.getText(), Toast.LENGTH_LONG).show();
-                    if(songType==0 || songType==1){ //only need this screen for a full song
+                    if(songType==0){ //only need this screen for a full song
                         resultIntent = new Intent( SongList.this, SongTypeMenu.class);
-                        resultIntent.putExtra("songType", songType);
                     }
                     else{
-                        resultIntent = new Intent( SongList.this, GameActivity.class);
-                        resultIntent.putExtra("repeatingSong", true);
+                        resultIntent = new Intent( SongList.this, TrainingActivity.class);
+
 
                         //there's some weirdness here, figure it out after we have the scales.
                         //probably need a bunch of intent extras, including repeatingSong=true

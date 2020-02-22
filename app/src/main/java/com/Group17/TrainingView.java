@@ -58,6 +58,7 @@ public class TrainingView extends SurfaceView implements Runnable {
     private Beat trainingBeat;
     private Note[] notes;
     private Bitmap neck;
+    private JSONArray song;
 
     private BluetoothService myService;
     private boolean isServiceBound=false;
@@ -71,6 +72,7 @@ public class TrainingView extends SurfaceView implements Runnable {
     }
     public TrainingView(TrainingActivity activity, int screenX, int screenY, JSONArray song, BluetoothService myService) throws JSONException { //pass in a json array containing 1 note
         super(activity);
+        this.song=song;
         this.activity = activity;
         this.myService = myService;
         if(myService!=null){

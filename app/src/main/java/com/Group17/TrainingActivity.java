@@ -41,7 +41,7 @@ public class TrainingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
-        String songName = intent.getStringExtra("noteName");
+        String songName = intent.getStringExtra("songName");
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -107,7 +107,7 @@ public class TrainingActivity extends AppCompatActivity {
     public String loadJSONFromAsset(Context context) {
         String json = null;
         try {
-            InputStream is = context.getAssets().open("notes.json");
+            InputStream is = context.getAssets().open("chords.json");
 
             int size = is.available();
 

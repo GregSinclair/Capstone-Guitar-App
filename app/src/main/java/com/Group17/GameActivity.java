@@ -58,12 +58,11 @@ public class GameActivity extends AppCompatActivity {
         }
         else{
             try {
-                String notesID = intent.getStringExtra("notesID");
                 String jtxt = loadJSONFromAsset(this);
                 JSONObject json = new JSONObject(jtxt);
                 JSONObject songObject = json.getJSONObject(songName);
                 if (partKey == -1) {
-                    song = songObject.getJSONArray(notesID);
+                    song = songObject.getJSONArray("song");
                 }
                 else{
                     JSONArray tempSong = songObject.getJSONArray("song");
