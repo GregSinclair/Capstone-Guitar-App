@@ -59,9 +59,12 @@ public class TrainingView extends SurfaceView implements Runnable {
     private Note[] notes;
     private Bitmap neck;
     private JSONArray song;
-
+    private boolean goToNextBeat=false;
     private BluetoothService myService;
     private boolean isServiceBound=false;
+
+    private int successThreshold=6;
+    private int index=0;
 
     private static final String TAG = "TrainingView";
 
@@ -81,21 +84,6 @@ public class TrainingView extends SurfaceView implements Runnable {
         prefs = activity.getSharedPreferences("game", Context.MODE_PRIVATE);
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-
-            AudioAttributes audioAttributes = new AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .setUsage(AudioAttributes.USAGE_GAME)
-                    .build();
-
-            soundPool = new SoundPool.Builder()
-                    .setAudioAttributes(audioAttributes)
-                    .build();
-
-        } else
-            soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
-
-        //sound = soundPool.load(activity, R.raw.shoot, 1);
 
 
         this.screenX = screenX;
@@ -110,11 +98,22 @@ public class TrainingView extends SurfaceView implements Runnable {
         paint.setTextSize(128);
         paint.setColor(Color.WHITE);
 
-        Resources res = getResources();
 
-        JSONArray beat = null;
+
+
+
+
+
+
+    }
+
+    private void loadNextBeat() throws JSONException {
+        JSONArray beat = song.getJSONArray(index);
+        Resources res = getResources();
+        //check externally if index is valid
+
         try {
-            beat = song.getJSONArray(0);
+
 
             Note[] notes = new Note[6];
             notes[0] = new Note(res, beat.getInt(0), screenX, screenY);
@@ -133,15 +132,18 @@ public class TrainingView extends SurfaceView implements Runnable {
         final int[] neckSequence = {0,0,1,0,1,0,1,0,1,0,0,2,0,0,1,0,1,0,1,0,0};
 
         Bitmap[] neckParts = new Bitmap[5];
-        beat = song.getJSONArray(0); //I assume reading from JSON isn't destructive
+
         int lowest = 99;
         for (int i=0;i<6;i++) {
-            if (beat.getInt(i)>0 && beat.getInt(i)<lowest) {
+            if (beat.getInt(i)>=0 && beat.getInt(i)<lowest) {
                 lowest = beat.getInt(i);
             }
         }
         if (lowest==99){
             return;
+        }
+        if(lowest==0){
+            lowest=1;
         }
         for(int i=0;i<5;i++){
             switch(neckSequence[lowest+i-1]){
@@ -165,7 +167,13 @@ public class TrainingView extends SurfaceView implements Runnable {
         finger = createScaledBitmap(finger, (int)(neckParts[0].getWidth()*0.5), (int)(neckParts[0].getHeight()*0.15), false);
         for(int i=0;i<6;i++){
             if(beat.getInt(i)>0){
-                updateBitmap(((int)(neckParts[0].getWidth()*0.25) + (neckParts[0].getWidth()*(beat.getInt(i)-lowest))), (int)(neck.getHeight() - neck.getHeight()*(0.022+((i+1)*0.164))), finger); //figure out why it needs i+1... very weird. probably the 0.22 constant
+                if(lowest==0){ //can't actually happen currently
+                    updateBitmap(((int)(neckParts[0].getWidth()*0.25) + (neckParts[0].getWidth()*(beat.getInt(i)-lowest-1))), (int)(neck.getHeight() - neck.getHeight()*(0+((i+1)*0.164))), finger);
+                }
+                else{
+                    updateBitmap(((int)(neckParts[0].getWidth()*0.25) + (neckParts[0].getWidth()*(beat.getInt(i)-lowest))), (int)(neck.getHeight() - neck.getHeight()*(0+((i+1)*0.164))), finger);
+                }
+                //updateBitmap(((int)(neckParts[0].getWidth()*0.25) + (neckParts[0].getWidth()*(beat.getInt(i)-lowest-1))), (int)(neck.getHeight() - neck.getHeight()*(0+((i+1)*0.164))), finger); //figure out why it needs i+1... very weird. probably the 0.22 constant
                 //updateBitmap((neck.getWidth() - (int)(neckParts[0].getWidth()*0.75) - (neckParts[0].getWidth()*(beat.getInt(i)-lowest))), (int)(neck.getHeight()*(0.025+(i*0.164))), finger); //changed the json while testing, change it back
             }
         }
@@ -188,18 +196,34 @@ public class TrainingView extends SurfaceView implements Runnable {
         }
 
 
-
     }
 
     @Override
     public void run() {
-
+        try {
+            loadNextBeat();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         while (isPlaying) {
 
             update ();
             draw ();
             sleep ();
 
+            if(goToNextBeat){
+                goToNextBeat=false;
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    loadNextBeat();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
     }
@@ -244,26 +268,28 @@ public class TrainingView extends SurfaceView implements Runnable {
                         }
                         Log.d("Fretboard", "int feedback is " + values);
 
-            /*
-            for(int j=0;j<6;j++){
-                try {
-                    feedback[j]=jFeedback.getInt(j);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-
-             */
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    /*
-                    for (int i = 0; i < 6; i++) {
-                        values[i] = jValues.getInt(i);
-                    }
-                     */
+
                     trainingBeat.applyFeedback(values);
                     trainingBeat.resetFeedbackCheck();
+
+                    if(song.length()>1){
+                        int score=0;
+                        for(int i=0;i<6;i++){
+                            score += values[i];
+                        }
+                        if (score>=successThreshold){
+                            index++;
+                            if (index>=song.length()){
+                                index=0;
+                            }
+                            goToNextBeat=true;
+                        }
+                    }
+
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -304,15 +330,6 @@ public class TrainingView extends SurfaceView implements Runnable {
 
     }
 
-    private void saveIfHighScore() {
-
-        if (prefs.getInt("highscore", 0) < score) {
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putInt("highscore", score);
-            editor.apply();
-        }
-
-    }
 
     private void sleep () {
         try {

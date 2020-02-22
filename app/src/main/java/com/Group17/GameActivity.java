@@ -44,7 +44,7 @@ public class GameActivity extends AppCompatActivity {
         songName = intent.getStringExtra("songName");
         int partKey = intent.getIntExtra("partKey",-1); //make sure the intent passes this in based on user input
         this.repeatingGame = intent.getBooleanExtra("repeatingSong", false);
-        tempoBPM = intent.getIntExtra("tempo", 69);
+        tempoBPM = intent.getIntExtra("tempo", 140);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         point = new Point();

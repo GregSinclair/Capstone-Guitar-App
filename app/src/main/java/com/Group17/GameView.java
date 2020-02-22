@@ -67,23 +67,6 @@ public class GameView extends SurfaceView implements Runnable  {
 
         prefs = activity.getSharedPreferences("game", Context.MODE_PRIVATE);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-
-            AudioAttributes audioAttributes = new AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .setUsage(AudioAttributes.USAGE_GAME)
-                    .build();
-
-            soundPool = new SoundPool.Builder()
-                    .setAudioAttributes(audioAttributes)
-                    .build();
-
-        } else
-            soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
-
-        //sound = soundPool.load(activity, R.raw.shoot, 1);
-
-
         GameView.screenX = screenX;
         GameView.screenY = screenY;
 
@@ -97,7 +80,7 @@ public class GameView extends SurfaceView implements Runnable  {
         paint.setColor(Color.WHITE);
 
         int fretsOnScreen = 10;
-        int tempo = 50;
+        int tempo = 140;
         int spacing = 2;
 
         tracker = new TriggerVisual(getResources(), screenX/fretsOnScreen, screenY);
@@ -109,7 +92,7 @@ public class GameView extends SurfaceView implements Runnable  {
     @Override
     public void run() {
 
-        while (!isFinished) {
+        while (!fretboard.finished) {
 
             update ();
             draw ();

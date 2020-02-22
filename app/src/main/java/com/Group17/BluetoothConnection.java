@@ -57,70 +57,9 @@ public class BluetoothConnection extends AppCompatActivity {
         bindService();
 
 
-        Button button1 = (Button) findViewById(R.id.button1);
-        Button button2 = (Button) findViewById(R.id.button2);
         Button button_done = (Button) findViewById(R.id.button_done);
-        Button button_read = (Button) findViewById(R.id.button_read);
 
-        button1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(isServiceBound && myService != null && myService.isRunning()){
-                    JSONObject json = new JSONObject();
-                    try {
-                        JSONArray beat = new JSONArray();
-                        beat.put(0);
-                        beat.put(0);
-                        beat.put(2);
-                        beat.put(2);
-                        beat.put(2);
-                        beat.put(0);
-                        json.put("type", 2);
-                        json.put("sequence", 0);
-                        json.put("timeStamp", 0);
-                        json.put("values", beat);
-                        json.put("duration", 1000);
-                        myService.sendMessage(json.toString());
-                        return;
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-                else{
-                    Toast.makeText(getApplicationContext(),"No connection",Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
 
-        button2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(isServiceBound && myService != null && myService.isRunning()){
-                    JSONObject json = new JSONObject();
-                    try {
-                        JSONArray beat = new JSONArray();
-                        beat.put(0);
-                        beat.put(2);
-                        beat.put(2);
-                        beat.put(0);
-                        beat.put(0);
-                        beat.put(0);
-                        json.put("type", 2);
-                        json.put("sequence", 0);
-                        json.put("timeStamp", 0);
-                        json.put("values", beat);
-                        json.put("duration", 1000);
-                        myService.sendMessage(json.toString());
-                        return;
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-                else{
-                    Toast.makeText(getApplicationContext(),"No connection",Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
 
         button_done.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -134,18 +73,7 @@ public class BluetoothConnection extends AppCompatActivity {
                 }
             }
         });
-        button_read.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(isServiceBound && myService != null && myService.isRunning()){
-                    Toast.makeText(getApplicationContext(),myService.getMessage(),Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                else{
-                    Toast.makeText(getApplicationContext(),"No connection",Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+
 
     }
 

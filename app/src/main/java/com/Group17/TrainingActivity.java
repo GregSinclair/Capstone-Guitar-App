@@ -32,7 +32,7 @@ public class TrainingActivity extends AppCompatActivity {
     private boolean isServiceBound;
     private ServiceConnection serviceConnection;
     private  Intent serviceIntent;
-
+    int songType;
     private JSONArray song = null;
     private Point point;
 
@@ -42,7 +42,7 @@ public class TrainingActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         String songName = intent.getStringExtra("songName");
-
+        songType = intent.getIntExtra("songType", 1);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
@@ -106,8 +106,16 @@ public class TrainingActivity extends AppCompatActivity {
 
     public String loadJSONFromAsset(Context context) {
         String json = null;
+        String fileName="";
+        if(songType==1){
+            fileName="chords.json";
+        }
+        else if(songType==2){
+            fileName="scales.json";
+        }
         try {
-            InputStream is = context.getAssets().open("chords.json");
+
+            InputStream is = context.getAssets().open(fileName);
 
             int size = is.available();
 
