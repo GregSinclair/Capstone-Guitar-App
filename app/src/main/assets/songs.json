@@ -137,7 +137,7 @@
 		"partNames": ["part1","part2"]
 	},
 
-	"Island In the Sun bpm 120 Version 2":
+	"Island In the Sun":
 	{
 		"song":
 		[
@@ -164,8 +164,11 @@
 			[0,5],
 			[6,10]
 		],
-		"partNames": ["part1","part2"]
+		"partNames": ["part1","part2"],
+		"bpm": 120
 	},
+
+
 	"Wish You Were Here":
 	{
 		"song":

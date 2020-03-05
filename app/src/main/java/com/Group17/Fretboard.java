@@ -209,19 +209,6 @@ public class Fretboard {
 
     public void setFeedback(JSONObject newFeedback) {
         lastFeedback = newFeedback;
-        /*
-        try {
-
-            //if(lastFeedback == null || newFeedback.getInt("sequence") > lastFeedback.getInt("sequence")) { //note that this means some can be skipped. might be troubling. look into possible setups for this later
-
-                lastFeedback = newFeedback;
-               // Log.d("Fretboard", "feedback updated");
-            //}
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-         */
     }
 
     private void checkFeedback(int i){
@@ -258,24 +245,11 @@ public class Fretboard {
                     return;
                 }
             }
-            //Log.d("Fretboard", "int feedback is " + feedback);
 
-            /*
-            for(int j=0;j<6;j++){
-                try {
-                    feedback[j]=jFeedback.getInt(j);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-
-             */
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        //Log.d("Fretboard", "feedback is " + feedback[0] + feedback[1]+feedback[2] + feedback[3]+feedback[4] + feedback[5]);
 
-        //Beat fret = beatTreadmill.get(i); //gotta use iterator bc of all the useless ones
         Beat fret;
         Iterator<Beat> frets = beatTreadmill.iterator();
 
@@ -283,8 +257,6 @@ public class Fretboard {
             fret = frets.next();
             if(fret.getIndex()==i){
                 fret.applyFeedback(feedback);
-                //Canvas comboImage = new Canvas(fretboard);
-                //comboImage.drawBitmap(fret.getBeat(), beatWidth * i, 0, null);
                 beatCounter--;
                 drawFullImage();
                 beatCounter++;

@@ -34,7 +34,7 @@ public class BluetoothConnection extends AppCompatActivity {
     ArrayAdapter adapter_paired_devices;
     BluetoothAdapter bluetoothAdapter;
     String bluetooth_message="00";
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "BluetoothConnection";
 
     private BluetoothService myService;
     private boolean isServiceBound;

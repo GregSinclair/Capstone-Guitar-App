@@ -90,7 +90,8 @@ public class Note {
             Canvas canvas = new Canvas(bmOverlay);
 
             Paint alphaPaint = new Paint();
-            alphaPaint.setColor(0xffffff80); //should be yellow
+            //this line didn't seem to do anything, would look bad, ensure it can be removed
+            //alphaPaint.setColor(0xffffff80); //should be yellow
             alphaPaint.setAlpha(75);
 
             canvas.drawBitmap(bmp1, new Matrix(), alphaPaint);

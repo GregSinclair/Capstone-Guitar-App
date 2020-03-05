@@ -129,7 +129,7 @@ public class TrainingView extends SurfaceView implements Runnable {
             e.printStackTrace();
         }
 
-        final int[] neckSequence = {0,0,1,0,1,0,1,0,1,0,0,2,0,0,1,0,1,0,1,0,0};
+
 
         Bitmap[] neckParts = new Bitmap[5];
 
@@ -145,6 +145,8 @@ public class TrainingView extends SurfaceView implements Runnable {
         if(lowest==0){
             lowest=1;
         }
+
+        final int[] neckSequence = {0,0,1,0,1,0,1,0,1,0,0,2,0,0,1,0,1,0,1,0,0};
         for(int i=0;i<5;i++){
             switch(neckSequence[lowest+i-1]){
                 case 0:
@@ -158,7 +160,7 @@ public class TrainingView extends SurfaceView implements Runnable {
                     break;
             }
         }
-        neck = Bitmap.createBitmap(5*neckParts[0].getWidth(), neckParts[0].getHeight(), Bitmap.Config.ARGB_8888); //scale this for screen resolution after its complete
+        neck = Bitmap.createBitmap(5*neckParts[0].getWidth(), neckParts[0].getHeight(), Bitmap.Config.ARGB_8888);
         for(int i=0;i<5;i++){
             updateBitmap(i*neckParts[0].getWidth(),0,neckParts[i]);
         }

@@ -115,7 +115,7 @@ public class ConnectedThread extends Thread {
 
     public JSONObject getLastJSONMessage(){
         return lastJSONObject;
-    }
+    } //this should be removed, is not used
 
 
     private class KeepingAlive extends Thread{

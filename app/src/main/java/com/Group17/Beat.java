@@ -101,7 +101,7 @@ public class Beat {
         Bitmap result = Bitmap.createBitmap(beatSprite.getWidth(), beatSprite.getHeight(), beatSprite.getConfig());
         Canvas canvas = new Canvas(result);
         canvas.drawBitmap(beatSprite, new Matrix(), null);
-        canvas.drawBitmap(newSprite, left, top, null); //based on the    drawBitmap(Bitmap bitmap, float left, float top, Paint paint)
+        canvas.drawBitmap(newSprite, left, top, null); //based on the drawBitmap(Bitmap bitmap, float left, float top, Paint paint)
         this.beatSprite = result;
     }
 
