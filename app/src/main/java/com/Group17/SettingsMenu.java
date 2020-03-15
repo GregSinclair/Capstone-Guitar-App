@@ -77,13 +77,28 @@ public class SettingsMenu extends AppCompatActivity {
                 TextView tv = (TextView) view;
                 String tvText = (String)tv.getText();
                 String[] tokens = tvText.split(": ");
-                if(tokens[1].equals("off")){ //simple toggle
-                    tokens[1] = "on";
-                    Toast.makeText(getApplicationContext(),tokens[0]+ " :" + tokens[1],Toast.LENGTH_SHORT).show();
+                if(tokens[0].equals("Tempo Override")) {
+                    if(tokens[1].equals("off")){
+                        tokens[1]=""+40;
+                    }
+                    else{
+                        int tempo = Integer.parseInt(tokens[1]);
+                        if (tempo>=400){
+                            tokens[1]="off";
+                        }
+                        else{
+                            tokens[1]=""+(tempo+20);
+                        }
+                    }
                 }
                 else{
-                    tokens[1] = "off";
-                    Toast.makeText(getApplicationContext(),tokens[0]+ " :" + tokens[1],Toast.LENGTH_SHORT).show();
+                    if (tokens[1].equals("off")) { //simple toggle
+                        tokens[1] = "on";
+                        Toast.makeText(getApplicationContext(), tokens[0] + " :" + tokens[1], Toast.LENGTH_SHORT).show();
+                    } else {
+                        tokens[1] = "off";
+                        Toast.makeText(getApplicationContext(), tokens[0] + " :" + tokens[1], Toast.LENGTH_SHORT).show();
+                    }
                 }
                 JSONObject jSettingChange = new JSONObject();
                 try {
@@ -129,13 +144,11 @@ public class SettingsMenu extends AppCompatActivity {
         JSONObject jSettings = new JSONObject();
         try {
             jSettings.put("Tempo Override", "off");
-            jSettings.put("Training Mode", "off");
-            jSettings.put("Manual Training Progression", "off");
+            jSettings.put("Always Training Mode", "off");
+            jSettings.put("Manual Training Mode Progression", "off"); //still gotta do this
+            jSettings.put("Unlock All Songs", "off");
 
 
-            jSettings.put("test value 2", "off");
-            jSettings.put("test value 3", "off");
-            //add more
         } catch (JSONException e) {
             e.printStackTrace();
         }

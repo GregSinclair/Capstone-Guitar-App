@@ -320,16 +320,17 @@ public class Fretboard {
         if (beatCounter >= lastBeatPos - fretsOnScreen) { //this is the final fret, implying the song is finished
             //verify that this works, needs to actually register the feedback for the last beat, might need i-1 or something
             int result=0; //have it either compute the score or just infinitely loop depending on the mode
+            int possibleScore=0;
             Iterator<Beat> fretsFinal = beatTreadmill.iterator();
             while (fretsFinal.hasNext()) {
                 fret = fretsFinal.next();
                 if(!fret.isEmpty()){
                     result += fret.viewFeedback();
+                    possibleScore += fret.maxFeedback();
                 }
             }
-            finalScore = (int)((result*100.00)/(6*beatTreadmill.size()));
-            //later on, maintain the previous and best score in the UI
-            //write the results to file
+            finalScore = (int)((result*100.00)/(possibleScore));
+
             Log.d(TAG, "Fretboard: score is "+result);
 
             if (repeatingGame == false){
@@ -340,7 +341,6 @@ public class Fretboard {
             }
 
         }
-
 
         Bitmap croppedFretboard = Bitmap.createBitmap(fretboard, posX, 0, beatWidth * fretsOnScreen, fretboard.getHeight());
 

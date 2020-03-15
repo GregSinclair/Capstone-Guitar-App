@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -43,6 +45,55 @@ public class MemoryInterface { //all currently untested
         }
         Log.d(TAG, "file does not exist");
         return false;
+    }
+
+    public static void initProgression(Context context){ //fire this and the settings one on launch
+        String fileName ="progression.txt";
+        if (!(checkIfFileExists(fileName))){
+            MemoryInterface.writeFile(getDefaultProgression(context, fileName), fileName);
+        }
+        else{
+            try { //yoinked from the settings version, hence the names. all internal so not a problem
+                JSONObject original = MemoryInterface.readFile(fileName);
+                JSONObject jSettings = getDefaultProgression(context, fileName);
+                Iterator<String> settingsIterator=jSettings.keys();
+                while(settingsIterator.hasNext()) {
+                    String current = settingsIterator.next();
+                    if(!original.has(current)){
+                        original.put(current, jSettings.get(current));
+                    }
+                }
+                MemoryInterface.writeFile(original, fileName);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static JSONObject getDefaultProgression(Context context, String fileName){
+        JSONObject initialProgression = new JSONObject();
+        try {
+
+            String jtxt = loadJSONFromAsset(context);
+            JSONObject json = new JSONObject(jtxt);
+
+
+            Iterator<String> songIterator=json.keys();
+
+            while(songIterator.hasNext()){
+                String currentName = songIterator.next();
+                JSONObject currentSong = new JSONObject(); //creating this to put in the result
+                JSONArray partNames = json.getJSONObject(currentName).getJSONArray("partNames"); //getting this so I know how many booleans to put in
+                currentSong.put(""+0, false);
+                for(int i=1;i<partNames.length();i++){
+                    currentSong.put(""+i, false); //0 being the full song. Logic is weird because we skip 1, but I think it checks out
+                }
+                initialProgression.put(currentName,currentSong);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return initialProgression;
     }
 
     public static JSONObject readFile(String fileName){
@@ -172,6 +223,28 @@ public class MemoryInterface { //all currently untested
         return false;
     }
 
+    public static String loadJSONFromAsset(Context context) { //in theory I could modify this so that it's called by all classes statically. Better not to for now
+        String json = null;
+        try {
 
+            InputStream is=context.getAssets().open("songs.json");
+
+            int size = is.available();
+
+            byte[] buffer = new byte[size];
+
+            is.read(buffer);
+
+            is.close();
+
+            json = new String(buffer, "UTF-8");
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+        return json;
+
+    }
 
 }

@@ -58,7 +58,7 @@ public class GameView extends SurfaceView implements Runnable  {
     public GameView(Context context) {
         super(context);
     }
-    public GameView(GameActivity activity, int screenX, int screenY, JSONArray song, BluetoothService myService, String songName, boolean repeatingGame) {
+    public GameView(GameActivity activity, int screenX, int screenY, JSONArray song, BluetoothService myService, String songName, boolean repeatingGame, int tempo) {
         super(activity);
         this.songName = songName;
         this.activity = activity;
@@ -80,7 +80,6 @@ public class GameView extends SurfaceView implements Runnable  {
         paint.setColor(Color.WHITE);
 
         int fretsOnScreen = 10;
-        int tempo = 140;
         int spacing = 2;
 
         tracker = new TriggerVisual(getResources(), screenX/fretsOnScreen, screenY);

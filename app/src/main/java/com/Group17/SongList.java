@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Arrays;
 
 
 public class SongList extends AppCompatActivity {
@@ -48,9 +49,23 @@ public class SongList extends AppCompatActivity {
 
             List<String> songNames = new ArrayList<String>();
             Iterator<String> songIterator=json.keys();
+
+            JSONObject scores = MemoryInterface.readFile("scores.txt");
+
             while(songIterator.hasNext()){
-                songNames.add(songIterator.next());
-            } //we will eventually display the score on the song names, use a special character so this can be delineated like I did with the settings
+                String currentName = songIterator.next();
+                if (scores!=null){
+                    currentName += "*";
+                    currentName += "    Highscore: ";
+                    if(scores.has(currentName)){
+                        currentName+=scores.get(currentName);
+                    }
+                    else{
+                        currentName+="0";
+                    }
+                }
+                songNames.add(currentName);
+            }
             songList=(ListView)findViewById(R.id.list_view_song);
             ArrayAdapter<String> songListAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, songNames);
             songList.setAdapter(songListAdapter);
@@ -58,7 +73,10 @@ public class SongList extends AppCompatActivity {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     TextView tv = (TextView) view;
-                    Toast.makeText(getApplicationContext(), tv.getText(), Toast.LENGTH_LONG).show();
+                    String tvText = tv.getText().toString();
+                    String[] thisNameParts = tvText.split("\\*");
+                    String thisName = thisNameParts[0];
+                    Toast.makeText(getApplicationContext(), thisName, Toast.LENGTH_LONG).show();
                     if(songType==0){ //only need this screen for a full song
                         resultIntent = new Intent( SongList.this, SongTypeMenu.class);
                     }
@@ -69,7 +87,7 @@ public class SongList extends AppCompatActivity {
                         //there's some weirdness here, figure it out after we have the scales.
                         //probably need a bunch of intent extras, including repeatingSong=true
                     }
-                    resultIntent.putExtra("songName", tv.getText());
+                    resultIntent.putExtra("songName", thisName);
                     resultIntent.putExtra("partKey", -1);
 
                     startActivity(resultIntent);

@@ -36,6 +36,7 @@ public class SongTypeMenu extends AppCompatActivity {
     private String songName;
     private JSONArray partNames;
     private int songType;
+    JSONObject jSongProgression;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,10 +50,30 @@ public class SongTypeMenu extends AppCompatActivity {
             JSONObject json = new JSONObject(jtxt);
             partNames = (json.getJSONObject(songName)).getJSONArray("partNames");
 
+            jSongProgression=MemoryInterface.readFile("progression.txt").getJSONObject(songName);
+
+            //format of the progression file: json object for each song, containing numbered booleans. 0 is the full song. first part is always unlocked, so it doesn't need a boolean
+            //have to make sure it initializes somewhere
             List<String> songNames = new ArrayList<String>();
-            songNames.add("Full Song");
+
+            boolean locksDisabled = false;
+            JSONObject jSettings = MemoryInterface.readFile("userSettings.txt");
+            locksDisabled = "on".equals(jSettings.getString("Unlock All Songs"));
+
+
+            if(jSongProgression.getBoolean(""+0) || locksDisabled){
+                songNames.add("Full Song");
+            }
+            else{
+                songNames.add("locked");
+            }
             for(int i=0;i<partNames.length();i++){
-                songNames.add(partNames.get(i).toString());
+                if(jSongProgression.getBoolean(""+i) || i==0 || locksDisabled){
+                    songNames.add(partNames.get(i).toString());
+                }
+                else{
+                    songNames.add("locked");
+                }
             }
             //maybe add a "memorized" option here, where the numbers aren't shown? There's probably a better place for it tho
             songList=(ListView)findViewById(R.id.list_view_song);
@@ -63,6 +84,12 @@ public class SongTypeMenu extends AppCompatActivity {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 TextView tv = (TextView) view;
                 Toast.makeText(getApplicationContext(), tv.getText(), Toast.LENGTH_LONG).show();
+
+                if(tv.getText().toString().equals("locked")){
+                    return;
+                }
+
+
 
                 int partKey=-1;
 
@@ -76,17 +103,52 @@ public class SongTypeMenu extends AppCompatActivity {
                     }
                 }
 
-                resultIntent = new Intent( SongTypeMenu.this, GameActivity.class);
-                resultIntent.putExtra("songName", songName);
+
+
                 if (partKey == -1){
+                    //check the setting here and go to TA if its enabled
+                    resultIntent = new Intent( SongTypeMenu.this, GameActivity.class);
+
+                    JSONObject jSettings = MemoryInterface.readFile("userSettings.txt");
+                    if(jSettings.has("Always Training Mode")){
+                        try {
+                            String theSetting=jSettings.getString("Always Training Mode");
+                            if (theSetting.equals("on")){
+                                resultIntent = new Intent( SongTypeMenu.this, TrainingActivity.class);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
                     resultIntent.putExtra("repeatingSong", false);
 
                 }
                 else{
+                    try {
+                        if (jSongProgression.has(""+(partKey+1))) {
+                            if (jSongProgression.getBoolean("" + (partKey + 1)) == false) {
+                                jSongProgression.put("" + (partKey + 1), true); //this should open up the next one as soon as it's chosen
+                                JSONObject newFullProgression = new JSONObject();
+                                newFullProgression.put(songName, jSongProgression);
+                                MemoryInterface.writeFile(newFullProgression, "progression.txt");
+                            }
+                        }
+                        else if(partKey+1 == partNames.length() && jSongProgression.getBoolean("" + 0) == false){
+                            jSongProgression.put("" + 0, true);
+                            JSONObject newFullProgression = new JSONObject();
+                            newFullProgression.put(songName, jSongProgression);
+                            MemoryInterface.writeFile(newFullProgression, "progression.txt");
+                        }
+
+                    }catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    resultIntent = new Intent( SongTypeMenu.this, TrainingActivity.class);
                     resultIntent.putExtra("repeatingSong", true);
 
                 }
-
+                resultIntent.putExtra("songName", songName);
                 if(songType==0){
                     resultIntent.putExtra("notesID", "song");
                 }

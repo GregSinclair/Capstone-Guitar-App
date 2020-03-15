@@ -16,8 +16,6 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,7 +33,7 @@ public class GameActivity extends AppCompatActivity {
     private GameActivity context;
     private String songName;
     private boolean repeatingGame;
-    private int tempoBPM=69;
+    private int tempoBPM=140;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +59,18 @@ public class GameActivity extends AppCompatActivity {
                 String jtxt = loadJSONFromAsset(this);
                 JSONObject json = new JSONObject(jtxt);
                 JSONObject songObject = json.getJSONObject(songName);
+
+                JSONObject jSettings = MemoryInterface.readFile("userSettings.txt");
+                String tempoOverrideString = jSettings.getString("Tempo Override");
+                if ("off".equals(tempoOverrideString)){
+                    if (songObject.has("bpm")){
+                        tempoBPM = songObject.getInt("bpm");
+                    }
+                }
+                else{
+                    tempoBPM = Integer.parseInt(tempoOverrideString);
+                }
+
                 if (partKey == -1) {
                     song = songObject.getJSONArray("song");
                 }
@@ -80,22 +90,7 @@ public class GameActivity extends AppCompatActivity {
 
         serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
         bindService();
-        /*
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask(){
-            int count=0;
-            @Override
-            public void run(){
-                while(count<6) {
-                    if (gameView == null) {
-                        count++;
-                    }
-                }
 
-            }
-        }, 0, 1000);
-
-         */
     }
 
 
@@ -177,23 +172,10 @@ public class GameActivity extends AppCompatActivity {
             Log.d("ACTIVITY SetBluetooth", "Not NULL");
             if(song != null)
             {
-                gameView = new GameView(this, point.x, point.y, song, myService, songName, repeatingGame);
+                gameView = new GameView(this, point.x, point.y, song, myService, songName, repeatingGame, tempoBPM);
                 setContentView(gameView);
                 //gameView.beginUnthreadedGame();
                 gameView.beginGame();
-
-                //finish();
-                /*
-                gameView = new GameView(this, point.x, point.y, song, myService, songName);
-                setContentView(gameView);
-                Thread gameViewThread = new Thread(gameView);
-
-                gameViewThread.start();
-
-                while(!gameView.isFinished){}
-                //setContentView(this); //idk whats up with this
-                finish();
-                */
 
             }
         }

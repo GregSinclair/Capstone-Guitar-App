@@ -154,7 +154,19 @@ public class Beat {
     public int viewFeedback(){ //this assumes boolean feedback, will have to rework it once we have nuanced feedback
         int result =0;
         for(int i=0;i<6;i++){
-            result+=feedback[i];
+            if(notes[i].getNoteNum()!=-2) {
+                result += feedback[i];
+            }
+        }
+        return result;
+    }
+
+    public int maxFeedback(){
+        int result =0;
+        for(int i=0;i<6;i++){
+            if(notes[i].getNoteNum()!=-2) {
+                result += 1;
+            }
         }
         return result;
     }

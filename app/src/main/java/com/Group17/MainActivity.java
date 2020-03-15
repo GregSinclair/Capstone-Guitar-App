@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.start_screen);
 
+        MemoryInterface.initProgression(this);
 
         findViewById(R.id.b_songs).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,13 +81,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-        findViewById(R.id.b_test).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) { //arbitrary testing button
-
-            }
-        });
 
         findViewById(R.id.b_settings).setOnClickListener(new View.OnClickListener() {
             @Override
