@@ -42,7 +42,7 @@ public class TrainingActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         String songName = intent.getStringExtra("songName");
-        songType = intent.getIntExtra("songType", 1);
+        songType = intent.getIntExtra("songType", 0);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
@@ -63,7 +63,25 @@ public class TrainingActivity extends AppCompatActivity {
         try {
             String jtxt = loadJSONFromAsset(this);
             JSONObject json = new JSONObject(jtxt);
-            song = json.getJSONArray(songName);
+
+
+            int partKey = intent.getIntExtra("partKey",-1);
+            if (partKey==-1){
+                song = json.getJSONArray(songName);
+            }
+            else{
+
+                JSONArray tempSong= (json.getJSONObject(songName)).getJSONArray("song");
+                int a= (int)((json.getJSONObject(songName).getJSONArray("parts")).getJSONArray(partKey)).get(0);
+                int b= (int)((json.getJSONObject(songName).getJSONArray("parts")).getJSONArray(partKey)).get(1);
+                song = new JSONArray();
+                for (int i=a;i<=b;i++){
+                    song.put(tempSong.getJSONArray(i));
+                }
+            }
+
+
+             //this works differently with the chords/scales
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -107,7 +125,10 @@ public class TrainingActivity extends AppCompatActivity {
     public String loadJSONFromAsset(Context context) {
         String json = null;
         String fileName="";
-        if(songType==1){
+        if(songType==0){
+            fileName="songs.json";
+        }
+        else if(songType==1){
             fileName="chords.json";
         }
         else if(songType==2){

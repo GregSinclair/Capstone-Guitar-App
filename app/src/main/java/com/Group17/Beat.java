@@ -57,7 +57,7 @@ public class Beat {
             this.feedback = feedback;
             beatSprite = BitmapFactory.decodeResource(res, R.drawable.fret);
             beatSprite = Bitmap.createScaledBitmap(beatSprite, width, height, false);
-            Log.d("Beat", "feedback is " + feedback[0] + feedback[1]);
+            //Log.d("Beat", "feedback is " + feedback[0] + feedback[1]);
             for (int i = 0; i < 6; i++) {
                 if (notes[i] != null && notes[i].getNote() != null) {
                     if (feedback[i] != 1) { //1 for good, other numbers will eventually be reserved for different feedback

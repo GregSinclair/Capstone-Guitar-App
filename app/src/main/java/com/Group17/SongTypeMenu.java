@@ -158,6 +158,7 @@ public class SongTypeMenu extends AppCompatActivity {
                 //case for scales goes here
 
                 resultIntent.putExtra("partKey", partKey);
+                resultIntent.putExtra("songType", songType);
                 startActivity(resultIntent);
                 }
             });

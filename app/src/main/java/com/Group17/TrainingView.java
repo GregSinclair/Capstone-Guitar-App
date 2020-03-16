@@ -63,8 +63,10 @@ public class TrainingView extends SurfaceView implements Runnable {
     private BluetoothService myService;
     private boolean isServiceBound=false;
 
+    private boolean manualProgression=false;
+
     private int successThreshold=6;
-    private int index=0;
+    private int index=-1; //gets iterated at the start of the method
 
     private static final String TAG = "TrainingView";
 
@@ -83,7 +85,7 @@ public class TrainingView extends SurfaceView implements Runnable {
         }
         prefs = activity.getSharedPreferences("game", Context.MODE_PRIVATE);
 
-
+        checkProgressionSetting();
 
 
         this.screenX = screenX;
@@ -99,18 +101,44 @@ public class TrainingView extends SurfaceView implements Runnable {
         paint.setColor(Color.WHITE);
 
 
+    }
 
-
-
-
-
-
+    private void checkProgressionSetting(){
+        JSONObject jSettings = MemoryInterface.readFile("userSettings.txt");
+        try {
+            manualProgression=("on".equals(jSettings.getString("Manual Training Mode Progression")));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void loadNextBeat() throws JSONException {
+
+        if(index>=song.length()){
+            index=0;
+        }
+        else{
+            index++;
+        }
+
         JSONArray beat = song.getJSONArray(index);
+        int a=0;
+        while(beat.getInt(a)==-2 && a<6){
+            a++;
+            if(a==6){
+                if(index<song.length()){
+                    index++;
+                }
+                else{
+                    index=0;
+                }
+                beat = song.getJSONArray(index);
+                a=0; //should keep going until it finds an actual beat, just can't exceed the song length
+            }
+        }
+
         Resources res = getResources();
-        //check externally if index is valid
+
 
         try {
 
@@ -140,7 +168,7 @@ public class TrainingView extends SurfaceView implements Runnable {
             }
         }
         if (lowest==99){
-            return;
+            return; //if it actually gets here, means all -2s, then crashes on trying to draw. make sure this doesn't happen.
         }
         if(lowest==0){
             lowest=1;
@@ -277,16 +305,12 @@ public class TrainingView extends SurfaceView implements Runnable {
                     trainingBeat.applyFeedback(values);
                     trainingBeat.resetFeedbackCheck();
 
-                    if(song.length()>1){
+                    if(song.length()>1 && !manualProgression){
                         int score=0;
                         for(int i=0;i<6;i++){
                             score += values[i];
                         }
                         if (score>=successThreshold){
-                            index++;
-                            if (index>=song.length()){
-                                index=0;
-                            }
                             goToNextBeat=true;
                         }
                     }
@@ -365,6 +389,10 @@ public class TrainingView extends SurfaceView implements Runnable {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if(manualProgression) {
+            goToNextBeat = true;
+        }
+
         return true;
     }
 
