@@ -1,10 +1,15 @@
 package com.Group17;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.Context;
+import android.content.ServiceConnection;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,42 +25,70 @@ import org.json.JSONObject;
 public class TrainingActivity extends AppCompatActivity {
 
     private TrainingView trainView;
-    ConnectedThread mBluetoothConnection;
+
+    private static final String TAG = "TrainingActivity";
+
+    private BluetoothService myService;
+    private boolean isServiceBound;
+    private ServiceConnection serviceConnection;
+    private  Intent serviceIntent;
+    int songType;
+    private JSONArray song = null;
+    private Point point;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
-        String songName = intent.getStringExtra("noteName");
-        mBluetoothConnection = intent.getParcelableExtra("bluetoothConnection"); //gonna have to remove all this now that we use Service
-
-        if(mBluetoothConnection!=null) {
-            Toast.makeText(getApplicationContext(), "Bluetooth persists", Toast.LENGTH_LONG).show();
-        }
-
+        String songName = intent.getStringExtra("songName");
+        songType = intent.getIntExtra("songType", 0);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        Point point = new Point();
+        serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
+        bindService();
+        if(isServiceBound && myService  != null && myService.isRunning())
+        {
+            Log.d(TAG, "MyService Not NULL");
+        }
+        else
+        {
+            Log.d("ACTIVITY SetBluetooth", "NULL");
+        }
+
+
+        point = new Point();
         getWindowManager().getDefaultDisplay().getSize(point);
-        JSONArray song = null;
+
         try {
             String jtxt = loadJSONFromAsset(this);
             JSONObject json = new JSONObject(jtxt);
-            song = json.getJSONArray(songName);
+
+
+            int partKey = intent.getIntExtra("partKey",-1);
+            if (partKey==-1){
+                song = json.getJSONArray(songName);
+            }
+            else{
+
+                JSONArray tempSong= (json.getJSONObject(songName)).getJSONArray("song");
+                int a= (int)((json.getJSONObject(songName).getJSONArray("parts")).getJSONArray(partKey)).get(0);
+                int b= (int)((json.getJSONObject(songName).getJSONArray("parts")).getJSONArray(partKey)).get(1);
+                song = new JSONArray();
+                for (int i=a;i<=b;i++){
+                    song.put(tempSong.getJSONArray(i));
+                }
+            }
+
+
+             //this works differently with the chords/scales
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        if(song != null)
-        {
-            try {
-                trainView = new TrainingView(this, point.x, point.y, song);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            setContentView(trainView);
-        }
+        serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
+        bindService();
+
 
     }
 
@@ -68,13 +101,42 @@ public class TrainingActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        trainView.resume();
+        if(trainView != null) {
+            trainView.resume();
+        }
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        JSONObject json = new JSONObject();
+        try {
+            json.put("type", 5);
+            json.put("sequence", 0);
+            json.put("timeStamp", 420);
+            json.put("values", null);
+            json.put("duration", -1); //duration of -1 indicates training mode
+            myService.sendMessage(json.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+   }
 
     public String loadJSONFromAsset(Context context) {
         String json = null;
+        String fileName="";
+        if(songType==0){
+            fileName="songs.json";
+        }
+        else if(songType==1){
+            fileName="chords.json";
+        }
+        else if(songType==2){
+            fileName="scales.json";
+        }
         try {
-            InputStream is = context.getAssets().open("notes.json");
+
+            InputStream is = context.getAssets().open(fileName);
 
             int size = is.available();
 
@@ -92,6 +154,57 @@ public class TrainingActivity extends AppCompatActivity {
         }
         return json;
 
+    }
+
+    private void bindService(){
+        if(serviceConnection==null){
+            serviceConnection=new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                    BluetoothService.BluetoothServiceBinder myServiceBinder=(BluetoothService.BluetoothServiceBinder)iBinder;
+                    myService=myServiceBinder.getService();
+                    isServiceBound=true;
+                    play();
+                }
+
+                @Override
+                public void onServiceDisconnected(ComponentName componentName) {
+                    isServiceBound=false;
+                }
+            };
+        }
+
+        bindService(serviceIntent,serviceConnection, Context.BIND_AUTO_CREATE);
+
+    }
+
+    private void unbindService(){
+        if(isServiceBound){
+            unbindService(serviceConnection);
+            isServiceBound=false;
+        }
+    }
+
+    public void play()
+    {
+        if(myService  != null && myService.isRunning() && song != null)
+        {
+            Log.d("ACTIVITY SetBluetooth", "Not NULL");
+            if(song != null)
+            {
+                try {
+                    trainView = new TrainingView(TrainingActivity.this, point.x, point.y, song, myService);
+                    setContentView(trainView);
+                    trainView.beginGame();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        else
+        {
+            Log.d("ACTIVITY SetBluetooth", "NULL");
+        }
     }
 
 }

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/text_tempo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Tempo (BPM)"
+        android:inputType="number"
+        app:layout_constraintTop_toTopOf="@+id/textView"/>
+
+    <EditText
+        android:id="@+id/text_density"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Density (0 to 1)"
+        android:inputType="numberDecimal"
+        app:layout_constraintTop_toBottomOf="@+id/text_tempo"/>
+
+    <Button
+        android:id="@+id/b_start"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start"
+        app:layout_constraintTop_toBottomOf="@+id/text_density"/>
+        />
+
+</LinearLayout>

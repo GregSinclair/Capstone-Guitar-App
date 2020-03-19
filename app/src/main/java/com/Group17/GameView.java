@@ -26,8 +26,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-public class GameView extends SurfaceView implements Runnable {
+public class GameView extends SurfaceView implements Runnable  {
 
     private Thread thread;
     private boolean isPlaying, isGameOver = false;
@@ -40,41 +42,30 @@ public class GameView extends SurfaceView implements Runnable {
 
     private GameActivity activity;
     private Background background;
-    private final int sleeptime = 50;
+    private final int sleeptime = 30;
     private TriggerVisual tracker;
     private Fretboard fretboard;
-
-
+    private String sentMessage = "";
+    private String songName;
     private BluetoothService myService;
-    private boolean isServiceBound;
-    private ServiceConnection serviceConnection;
-    private  Intent serviceIntent;
+    private boolean isServiceBound=false;
+    private boolean IOPermissions=false;
+    private boolean repeatingGame;
+    private static final String TAG = "GameView";
 
+    public boolean isFinished=false;
 
     public GameView(Context context) {
         super(context);
     }
-    public GameView(GameActivity activity, int screenX, int screenY, JSONArray song, BluetoothService myService) {
+    public GameView(GameActivity activity, int screenX, int screenY, JSONArray song, BluetoothService myService, String songName, boolean repeatingGame, int tempo) {
         super(activity);
+        this.songName = songName;
         this.activity = activity;
+        this.repeatingGame = repeatingGame;
+        this.myService = myService;
+
         prefs = activity.getSharedPreferences("game", Context.MODE_PRIVATE);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-
-            AudioAttributes audioAttributes = new AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .setUsage(AudioAttributes.USAGE_GAME)
-                    .build();
-
-            soundPool = new SoundPool.Builder()
-                    .setAudioAttributes(audioAttributes)
-                    .build();
-
-        } else
-            soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
-
-        //sound = soundPool.load(activity, R.raw.shoot, 1);
-
 
         GameView.screenX = screenX;
         GameView.screenY = screenY;
@@ -89,30 +80,52 @@ public class GameView extends SurfaceView implements Runnable {
         paint.setColor(Color.WHITE);
 
         int fretsOnScreen = 10;
-        int tempo = 40;
         int spacing = 2;
 
         tracker = new TriggerVisual(getResources(), screenX/fretsOnScreen, screenY);
         tracker.x = (int) (screenX * 0.2);
 
-        fretboard = new Fretboard(getResources(), screenX, (int) (screenY * 0.8), song, fretsOnScreen, spacing, tempo, sleeptime, tracker.x);
+        fretboard = new Fretboard(getResources(), screenX, (int) (screenY * 0.8), song, fretsOnScreen, spacing, tempo, sleeptime, tracker.x, songName, repeatingGame);
     }
 
     @Override
     public void run() {
 
-        while (isPlaying) {
+        while (!fretboard.finished) {
 
             update ();
             draw ();
             sleep ();
 
         }
+        activity.finish();
 
     }
 
     private void update () {
 
+        try {
+            String feedback = myService.getMessage();
+            if(feedback.length()>1)
+            fretboard.setFeedback(new JSONObject(feedback));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        if (fretboard.finished){
+            if(MemoryInterface.checkReadPermission(activity)){
+                if(MemoryInterface.checkWritePermission(activity)) {
+                    IOPermissions = true; //this stops it from bypassing that check
+                }
+            }
+            while(!IOPermissions){} //again, this should be modified to timeout eventually
+            concludeSong();
+            isFinished=true;
+
+        }
+
+        //this will be where we maintain the bluetooth connection and try to reconnect if it drops
+        //currently nothing is implemented in the game or training that involves this, assumed it runs perfectly and doesn't need to be manually stopped
 
 
     }
@@ -126,23 +139,27 @@ public class GameView extends SurfaceView implements Runnable {
             canvas.drawBitmap(fretboard.getNextFrame(), 0, (int) (screenY*0.1), paint);
             canvas.drawBitmap(tracker.getBitmap(), tracker.x, tracker.y, paint);
 
-
-
-            if (isGameOver) {
-                isPlaying = false;
-
-                getHolder().unlockCanvasAndPost(canvas);
-
-                waitBeforeExiting ();
-                return;
+            String newMessage = fretboard.getNextMessage();
+            if(newMessage != sentMessage)
+            {
+                sentMessage = newMessage;
+                myService.sendMessage(newMessage);
             }
-
-
 
             getHolder().unlockCanvasAndPost(canvas);
 
         }
 
+    }
+
+    private void concludeSong(){
+        JSONObject json = new JSONObject();
+        try {
+            json.put(songName, fretboard.getFinalScore());
+            MemoryInterface.writeFile(json, "scores.txt");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void waitBeforeExiting() {
@@ -167,11 +184,19 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     public void resume () {
+    }
 
-        isPlaying = true;
+    public void beginGame() //old threading method
+    {
         thread = new Thread(this);
         thread.start();
+        //while(!isFinished){}
 
+
+    }
+
+    public void beginUnthreadedGame(){ //just causes blackscreen
+        run();
     }
 
     public void pause () {
@@ -183,6 +208,10 @@ public class GameView extends SurfaceView implements Runnable {
             e.printStackTrace();
         }
 
+    }
+
+    public void setPermissions(){
+        IOPermissions=true;
     }
 
 

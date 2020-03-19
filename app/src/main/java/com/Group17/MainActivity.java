@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.*;
 
+import org.json.JSONObject;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -26,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
     //BluetoothConnectionService mBluetoothConnection;
     ConnectedThread mBluetoothConnection = null;
 
+    private String theSong = "Shorty";
+
     private static final String TAG = "MainActivity";
 
     @Override
@@ -35,41 +38,56 @@ public class MainActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        setContentView(R.layout.title_screen);
+        setContentView(R.layout.start_screen);
 
+        MemoryInterface.initProgression(this);
 
-
-
-
-        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                if(mBluetoothConnection==null) {
-                    Log.d(TAG, "no bluetooth connection");
-
-                    Toast.makeText(getApplicationContext(), "No bluetooth connection", Toast.LENGTH_LONG).show();
-                    //return;
-                }
-
-                Intent intent = new Intent(MainActivity.this, GameActivity.class);
-                intent.putExtra("songName", "Fun");
-                startActivity(intent);
-            }
-        });
-
-        findViewById(R.id.button4).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.b_songs).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 Intent intent = new Intent(MainActivity.this, SongList.class);
-                //intent.putExtra("songName", "Fun2");
-                Intent bluetoothIntent;
-                startActivityForResult(intent,1);
+                intent.putExtra("songType", 0);
+                startActivity(intent); //if this works, apply it to all the others
+            }
+        });
 
-                //mBluetoothConnection = bluetoothIntent.getParcelableExtra("bluetoothConnection");
+        findViewById(R.id.b_chords).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(MainActivity.this, SongList.class);
+                intent.putExtra("songType", 1);
+                startActivity(intent);
+            }
+        });
+
+        findViewById(R.id.b_scales).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(MainActivity.this, SongList.class);
+                intent.putExtra("songType", 2);
+                startActivity(intent);
+            }
+        });
+
+        findViewById(R.id.b_tempo).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(MainActivity.this, TempoSetupActivity.class);
+                startActivity(intent);
+            }
+        });
 
 
+        findViewById(R.id.b_settings).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(MainActivity.this, SettingsMenu.class);
+                startActivity(intent);
             }
         });
 
@@ -92,16 +110,16 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
+    @Override //not used anymore. in fact, no reason to check for bt at the start, game does it
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d(TAG, "in activity result"); //this doesn't seem to ever trigger
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == 1) {
+        if (requestCode == 1) { //song choice
             if (resultCode == RESULT_OK) {
                 if(data != null) {
                     Log.d(TAG, "intent received");
-                    mBluetoothConnection = data.getParcelableExtra("bluetoothConnection");
+                    theSong = data.getParcelableExtra("song");
                 }
             }
             if (resultCode == RESULT_CANCELED) {
@@ -111,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void bindService(){
+    private void bindService(){ //doubt these are needed
         if(serviceConnection==null){
             serviceConnection=new ServiceConnection() {
                 @Override

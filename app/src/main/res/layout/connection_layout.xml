@@ -24,36 +24,12 @@
             android:layout_weight="1"></ListView>
 
         <Button
-            android:id="@+id/button1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_toRightOf="@+id/lv_paired_devices"
-            android:text="Button" />
-
-        <Button
-            android:id="@+id/button2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/button1"
-            android:layout_toRightOf="@+id/lv_paired_devices"
-            android:text="Button2" />
-
-        <Button
             android:id="@+id/button_done"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/button2"
             android:layout_toRightOf="@+id/lv_paired_devices"
             android:text="Done" />
-
-        <Button
-            android:id="@+id/button_read"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/button_done"
-            android:layout_toRightOf="@+id/lv_paired_devices"
-            android:text="Read" />
 
 
     </RelativeLayout>

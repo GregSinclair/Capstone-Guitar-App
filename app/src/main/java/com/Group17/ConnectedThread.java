@@ -2,6 +2,9 @@ package com.Group17;
 
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,8 +20,6 @@ public class ConnectedThread extends Thread {
     private JSONObject lastJSONObject=null; //the json will be sent over as text and then converted
 
     private static final String TAG = "ConnectedThread";
-
-
 
     public ConnectedThread(BluetoothSocket socket) {
         Log.d(TAG, "Create");
@@ -37,6 +38,8 @@ public class ConnectedThread extends Thread {
         mmInStream = tmpIn;
         mmOutStream = tmpOut;
 
+
+
         KeepingAlive ohOhOhOh = new KeepingAlive(mmSocket, mmInStream, mmOutStream);
         ohOhOhOh.start();
 
@@ -51,13 +54,16 @@ public class ConnectedThread extends Thread {
 
         String message="";
 
-        while (true) {
-            Log.d(TAG, "Connected Thread: Looping");
+        while (true) { //ok so on the first run it finds no message and never gets past the first try
+            //Log.d(TAG, "Connected Thread: Looping");
             try {
                 // Read from the InputStream
-                bytes = mmInStream.read(buffer);
+                bytes=0;
+                while (bytes==0) {
+                    bytes = mmInStream.read(buffer);
+                }
                 String oneChar= new String(buffer);
-                Log.d(TAG, "Connected Thread: got character: "+oneChar);
+                //Log.d(TAG, "Connected Thread: got character: "+oneChar);
                 if(oneChar.contains("*")){
                     Log.d(TAG, "Connected Thread: message recieved: "+message);
                     lastMessage=message;
@@ -70,7 +76,7 @@ public class ConnectedThread extends Thread {
                 // Send the obtained bytes to the UI activity
                 //mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer).sendToTarget();
 
-                Log.d(TAG, "Connected Thread: Sent Read");
+                //Log.d(TAG, "Connected Thread: Sent Read");
             } catch (IOException e) {
                 Log.d(TAG, "Connected Thread: Loop Escape");
                 break;
@@ -80,14 +86,14 @@ public class ConnectedThread extends Thread {
 
     /* Call this from the main activity to send data to the remote device */
     public void write(byte[] bytes) {
-        Log.d(TAG, "Connect Thread: Write");
+        //Log.d(TAG, "Connect Thread: Write");
         try {
             mmOutStream.write(bytes);
         } catch (IOException e) { Log.d(TAG, "Connected Thread: Write Error"); }
     }
 
     public void write(String newMessage){
-        Log.d(TAG, "Connect Thread: WriteString");
+        //Log.d(TAG, "Connect Thread: WriteString");
         Log.d(TAG, newMessage);
         byte[] bytes = newMessage.getBytes(); //verify that this works, might need to choose utf8 or something
         try {
@@ -109,7 +115,7 @@ public class ConnectedThread extends Thread {
 
     public JSONObject getLastJSONMessage(){
         return lastJSONObject;
-    }
+    } //this should be removed, is not used
 
 
     private class KeepingAlive extends Thread{
@@ -117,10 +123,34 @@ public class ConnectedThread extends Thread {
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
         private boolean running = true;
+        private final byte[] KABytes;
+
         public KeepingAlive(BluetoothSocket socket, InputStream input, OutputStream output){
             mmSocket=socket;
             mmInStream=input;
             mmOutStream=output;
+
+            JSONObject keepAlive = new JSONObject();
+            try {
+                JSONArray beat = new JSONArray();
+                beat.put(-2);
+                beat.put(-2);
+                beat.put(-2);
+                beat.put(-2);
+                beat.put(-2);
+                beat.put(-2);
+                keepAlive.put("type", 1);
+                keepAlive.put("sequence", 0);
+                keepAlive.put("timeStamp", 0);
+                keepAlive.put("values", beat);
+                keepAlive.put("duration", 500);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            KABytes = keepAlive.toString().getBytes(); //verify that this works, might need to choose utf8 or something
+
+
         }
         public void run() {
             while (running) {
@@ -134,13 +164,15 @@ public class ConnectedThread extends Thread {
         }
         public void terminate(){ //really ought to call this somewhere
             running = false;
-        }
+        } //this needs to get called when the connection is lost, otherwise there are weird errors due to multiple instances of this running
+
         private void write(){
-            Log.d(TAG, "Oh Oh Oh Oh STAYIN ALIVE");
-            byte[] bytes = "Keeping alive".getBytes(); //verify that this works, might need to choose utf8 or something
+            //Log.d(TAG, "Oh Oh Oh Oh STAYIN ALIVE");
+
             try {
-                mmOutStream.write(bytes);
-            } catch (IOException e) { Log.d(TAG, "KeepingAlive Thread: Write Error"); }
+                mmOutStream.write(KABytes);
+            } catch (IOException e) { Log.d(TAG, "KeepingAlive Thread: Write Error" + e.getMessage()); }
         }
     }
 }
+

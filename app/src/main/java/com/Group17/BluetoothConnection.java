@@ -17,6 +17,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Set;
 
 
@@ -29,7 +34,7 @@ public class BluetoothConnection extends AppCompatActivity {
     ArrayAdapter adapter_paired_devices;
     BluetoothAdapter bluetoothAdapter;
     String bluetooth_message="00";
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "BluetoothConnection";
 
     private BluetoothService myService;
     private boolean isServiceBound;
@@ -43,52 +48,18 @@ public class BluetoothConnection extends AppCompatActivity {
         setContentView(R.layout.connection_layout);
 
         serviceIntent=new Intent(getApplicationContext(),BluetoothService.class);
+
+        //BluetoothServiceInterface myBSI = new BluetoothServiceInterface(serviceIntent);
+        //myBSI.run();
+
+        //gotta get the results out of that
+
         bindService();
-        if(isServiceBound && myService  != null && myService.isRunning())
-        {
-            Log.d(TAG, "MyService Not NULL");
-        }
-        else
-        {
-            Log.d("ACTIVITY SetBluetooth", "NULL");
-        }
 
-        initialize_layout();
-        initialize_bluetooth();
-        initialize_clicks();
 
-        Button button1 = (Button) findViewById(R.id.button1);
-        Button button2 = (Button) findViewById(R.id.button2);
         Button button_done = (Button) findViewById(R.id.button_done);
-        Button button_read = (Button) findViewById(R.id.button_read);
 
-        button1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(isServiceBound && myService != null && myService.isRunning()){
-                    bluetooth_message = "{'type':'button1 pressed'}*";
-                    myService.sendMessage(bluetooth_message);
-                    return;
-                }
-                else{
-                    Toast.makeText(getApplicationContext(),"No connection",Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
 
-        button2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(isServiceBound && myService != null && myService.isRunning()){
-                    bluetooth_message = "{'type':'button2 pressed'}*";
-                    myService.sendMessage(bluetooth_message);
-                    return;
-                }
-                else{
-                    Toast.makeText(getApplicationContext(),"No connection",Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
 
         button_done.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -102,18 +73,7 @@ public class BluetoothConnection extends AppCompatActivity {
                 }
             }
         });
-        button_read.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(isServiceBound && myService != null && myService.isRunning()){
-                    Toast.makeText(getApplicationContext(),myService.getMessage(),Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                else{
-                    Toast.makeText(getApplicationContext(),"No connection",Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+
 
     }
 
@@ -183,6 +143,19 @@ public class BluetoothConnection extends AppCompatActivity {
                     BluetoothService.BluetoothServiceBinder myServiceBinder=(BluetoothService.BluetoothServiceBinder)iBinder;
                     myService=myServiceBinder.getService();
                     isServiceBound=true;
+
+                    if(isServiceBound && myService  != null && myService.isRunning())
+                    {
+                        Log.d(TAG, "MyService Not NULL");
+                    }
+                    else
+                    {
+                        Log.d("ACTIVITY SetBluetooth", "NULL");
+                    }
+
+                    initialize_layout();
+                    initialize_bluetooth();
+                    initialize_clicks();
                 }
 
                 @Override

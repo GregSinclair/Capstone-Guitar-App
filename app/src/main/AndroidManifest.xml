@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -22,6 +23,12 @@
             android:theme="@style/AppTheme.noActionBar"/>
         <activity android:name=".TrainingActivity"
             android:screenOrientation="landscape"
+            android:theme="@style/AppTheme.noActionBar"/>
+        <activity android:name=".TempoSetupActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.noActionBar"/>
+        <activity android:name=".SongTypeMenu"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.noActionBar"/>
         <activity
             android:name=".MainActivity"
@@ -37,9 +44,14 @@
         <activity android:name=".SongList"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.noActionBar"/>
+        <activity android:name=".SettingsMenu"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.noActionBar"/>
         <activity android:name=".BluetoothConnection"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.noActionBar"/>
+        <activity android:name=".BluetoothServiceInterface" />
+
         <service
             android:name=".BluetoothService">
             <intent-filter>
